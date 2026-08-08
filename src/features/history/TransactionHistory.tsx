@@ -12,10 +12,10 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
   }
 
   return (
-    <div className={styles.list}>
+    <ul className={styles.list}>
       {transactions.map((transaction) => (
         <TransactionRow key={transaction.id} transaction={transaction} />
       ))}
-    </div>
+    </ul>
   );
 }

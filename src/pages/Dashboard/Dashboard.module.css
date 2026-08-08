@@ -394,6 +394,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  /* <ul> real (no <div>) por semántica de lista para lectores de pantalla —
+     TransactionRow es <li> ahora, compartido con TransactionHistory.tsx. */
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .txEmptyState {

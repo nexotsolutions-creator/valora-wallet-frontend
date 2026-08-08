@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type SubmitEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import { useAuth } from "../../shared/auth/useAuth";
 import { Button } from "../../shared/components/Button/Button";
 import { CardDisplay } from "../../shared/components/CardDisplay/CardDisplay";
@@ -13,6 +13,7 @@ import { getApiErrorMessage } from "../../shared/services/apiClient";
 import { getBalances } from "../../shared/services/balanceService";
 import { deposit, getTransactions } from "../../shared/services/transactionService";
 import type { Balance, CurrencyCode, Transaction } from "../../shared/types/models";
+import type { DashboardOutletContext } from "../../layouts/DashboardLayout/DashboardLayout";
 import styles from "./Dashboard.module.css";
 
 const CURRENCY_OPTIONS: CurrencyCode[] = ["USD", "EUR", "ARS"];
@@ -44,6 +45,7 @@ export function Dashboard() {
   const [hidden, setHidden] = useState<Record<CurrencyCode, boolean>>({ USD: true, EUR: true, ARS: true });
   const { message: toast, showToast } = useToast();
   const currencyMenuAnchorRef = useRef<HTMLDivElement>(null);
+  const { onOpenChatbot } = useOutletContext<DashboardOutletContext>();
 
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [depositCurrency, setDepositCurrency] = useState<CurrencyCode>("USD");
@@ -57,7 +59,14 @@ export function Dashboard() {
   const [conversionMode, setConversionMode] = useState<"BUY" | "SELL">("BUY");
   const [isConversionOpen, setIsConversionOpen] = useState(false);
 
-  const loadDashboardData = useCallback(async (cancelled: boolean) => {
+  // Ref, no variable local: loadDashboardData es async y chequea cancelledRef
+  // después de un await — un boolean pasado por parámetro se copia por valor
+  // en ese punto y queda leyendo el estado "congelado" de cuando se llamó a la
+  // función, no el valor real que muta el cleanup del efecto. El ref sí lee el
+  // valor actual en cada chequeo, sin importar cuánto haya avanzado el await.
+  const cancelledRef = useRef(false);
+
+  const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -65,23 +74,27 @@ export function Dashboard() {
         getBalances(token as string),
         getTransactions(token as string, { limit: LATEST_TRANSACTIONS_LIMIT }),
       ]);
-      if (cancelled) return;
+      if (cancelledRef.current) return;
       setBalances(balancesData);
       setTransactions(transactionsResult.transactions);
     } catch (err) {
-      if (cancelled) return;
+      if (cancelledRef.current) return;
       setError(getApiErrorMessage(err));
     } finally {
-      if (!cancelled) setIsLoading(false);
+      if (!cancelledRef.current) setIsLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
     if (!token) return;
-    let cancelled = false;
-    loadDashboardData(cancelled);
+    // Reset explícito: a diferencia de `let cancelled = false` (variable nueva
+    // en cada corrida del efecto), el ref persiste entre corridas — sin este
+    // reset, un cleanup previo (ej. token cambió) dejaría cancelledRef en true
+    // y esta corrida nueva se cancelaría a sí misma antes de arrancar.
+    cancelledRef.current = false;
+    loadDashboardData();
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
   }, [token, loadDashboardData]);
 
@@ -102,7 +115,7 @@ export function Dashboard() {
     const verb = conversionMode === "BUY" ? "Compraste" : "Vendiste";
     const receivedAmount = transaction.targetAmount?.toLocaleString("es-AR", { maximumFractionDigits: 2 }) ?? "0";
     showToast(`${verb} ${receivedAmount} ${transaction.targetCurrency ?? ""}.`);
-    loadDashboardData(false);
+    loadDashboardData();
   }
 
   async function handleDepositSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -120,7 +133,7 @@ export function Dashboard() {
       await deposit(token as string, depositCurrency, parsedAmount);
       setIsDepositOpen(false);
       showToast(`Depositaste ${parsedAmount.toLocaleString("es-AR", { maximumFractionDigits: 2 })} ${depositCurrency}.`);
-      await loadDashboardData(false);
+      await loadDashboardData();
     } catch (err) {
       setDepositError(getApiErrorMessage(err));
     } finally {
@@ -284,7 +297,7 @@ export function Dashboard() {
               Optimizá tus finanzas con IA. Analizamos tus patrones de gasto para ofrecerte mejores rendimientos.
             </p>
           </div>
-          <button type="button" className={styles.aiButton}>Consultar ahora</button>
+          <button type="button" className={styles.aiButton} onClick={onOpenChatbot}>Consultar ahora</button>
         </div>
       </section>
 
@@ -294,14 +307,16 @@ export function Dashboard() {
             <span className={styles.label}>Últimas transacciones</span>
             <Link to="/actividad" className={styles.txLink}>Ver todas</Link>
           </div>
-          <div className={styles.txList}>
-            {isLoading && <p className={styles.txEmptyState}>Cargando...</p>}
-            {!isLoading && error && <p className={styles.txEmptyState}>{error}</p>}
-            {!isLoading && !error && transactions?.length === 0 && (
-              <p className={styles.txEmptyState}>Todavía no hiciste ninguna operación.</p>
-            )}
-            {!isLoading && !error && transactions?.map((tx) => <TransactionRow key={tx.id} transaction={tx} />)}
-          </div>
+          {isLoading && <p className={styles.txEmptyState}>Cargando...</p>}
+          {!isLoading && error && <p className={styles.txEmptyState}>{error}</p>}
+          {!isLoading && !error && transactions?.length === 0 && (
+            <p className={styles.txEmptyState}>Todavía no hiciste ninguna operación.</p>
+          )}
+          {!isLoading && !error && transactions && transactions.length > 0 && (
+            <ul className={styles.txList}>
+              {transactions.map((tx) => <TransactionRow key={tx.id} transaction={tx} />)}
+            </ul>
+          )}
         </div>
 
         {/* Vista de tarjeta física: no estaba en el checklist original, se sumó al traer el mock del diseño Geist */}

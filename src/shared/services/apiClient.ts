@@ -81,8 +81,12 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   if (!response.ok) {
     // El backend manda el texto pensado para mostrarle al usuario en `message`
     // (ej. "Tasa de cambio no disponible..."), no en `error` — ese campo es el
-    // código de error interno (ej. "RATE_NOT_AVAILABLE"), no texto para UI.
-    const message = (data as { message?: string } | undefined)?.message ?? "Ocurrió un error inesperado. Intentá de nuevo.";
+    // código de error interno (ej. "RATE_NOT_AVAILABLE"), no texto para UI. Pero
+    // algún endpoint (o un proxy intermedio) puede seguir mandando el texto útil
+    // en `error` en vez de `message` — `||` (no `??`) para que también caiga acá
+    // si `message` viene como string vacío, no solo undefined/null.
+    const errorBody = data as { message?: string; error?: string } | undefined;
+    const message = errorBody?.message || errorBody?.error || "Ocurrió un error inesperado. Intentá de nuevo.";
     throw new ApiError(message, response.status);
   }
 

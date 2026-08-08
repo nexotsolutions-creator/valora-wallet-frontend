@@ -16,7 +16,7 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
   const display = formatTransaction(transaction);
 
   return (
-    <div className={styles.txRow}>
+    <li className={styles.txRow}>
       <div className={styles.txRowLeft}>
         <div className={`${styles.txIconWrap} ${toneClass[display.tone]}`}>
           <span className={`msym ${styles.txIcon}`} aria-hidden="true">{display.glyph}</span>
@@ -31,6 +31,6 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
         <div className={`${styles.txAmount} ${toneClass[display.tone]}`}>{display.amount}</div>
         <div className={styles.txCurrency}>{display.currency}</div>
       </div>
-    </div>
+    </li>
   );
 }

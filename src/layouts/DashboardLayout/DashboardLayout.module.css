@@ -29,6 +29,10 @@
        flotante como el toast): despeja el padding-bottom del bottom nav fijo,
        sin repetir el valor a mano en cada .module.css que cuelgue de <Outlet/>. */
     --content-bottom-offset: 96px;
+    /* Consumido por features/chatbot/ChatbotFAB: mismo mecanismo que
+       --toast-bottom-offset (despejar el BottomNav fijo), pero variable propia
+       — el offset del FAB y el del toast no tienen por qué moverse juntos. */
+    --chatbot-fab-offset: 96px;
   }
 }
 
