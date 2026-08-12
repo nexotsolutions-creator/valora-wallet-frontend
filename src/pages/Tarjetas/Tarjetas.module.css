@@ -1,0 +1,64 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  padding-bottom: var(--content-bottom-offset, var(--spacing-xl));
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.cardRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+/* Mismo ancho que la tarjeta tiene hoy en el Dashboard (medido ahí en vivo:
+   312px a 1280px de viewport, columna .aside de un grid 2fr/1fr) — CardDisplay
+   no tiene ancho propio (ocupa el 100% del contenedor), así que se lo damos
+   acá en vez de tocar el componente compartido y arriesgar el tamaño que ya
+   usa el Dashboard. */
+.cardSlot {
+  width: 100%;
+  max-width: 312px;
+}
+
+.addCardButton {
+  width: 140px;
+  height: 192px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.addCardButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg-inset);
+}
+
+@media (max-width: 480px) {
+  .addCardButton {
+    width: 100%;
+    height: 96px;
+  }
+}

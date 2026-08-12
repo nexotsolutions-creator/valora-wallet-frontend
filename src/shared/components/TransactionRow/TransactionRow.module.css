@@ -1,0 +1,135 @@
+.txRow {
+  display: flex;
+  /* flex-start, no center: con título largo (ej. "Intercambio USD → EUR" +
+     la tasa) el bloque de la izquierda puede envolver a 2-3 líneas — con
+     center, el importe de la derecha quedaba centrado contra esa altura y
+     terminaba pegado a la segunda línea del título en vez de alineado con
+     la primera. */
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  margin: 0 calc(var(--spacing-sm) * -1);
+  border-radius: var(--radius-md);
+  cursor: default;
+  transition: background-color 0.15s ease;
+}
+
+@media (max-width: 480px) {
+  /* Con título + fecha + tasa (3 líneas posibles) compitiendo por ancho con
+     el importe en la misma fila, no entran los dos lado a lado por debajo de
+     ~480px — probado en 320 (Galaxy S9) y 366px. En vez de forzarlo (que
+     terminaba en overlap, o partiendo "Intercambio" a la mitad), el importe
+     pasa a su propia línea, alineado bajo el texto en vez de bajo el ícono. */
+  .txRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .txRight {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 6px;
+    /* 40px del ícono + spacing-md del gap de .txRowLeft, para que el importe
+       quede alineado con el texto de arriba, no con el ícono. */
+    padding-left: calc(40px + var(--spacing-md));
+    text-align: right;
+  }
+}
+
+.txRow:hover {
+  background: var(--bg-inset);
+}
+
+.txRowLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  /* Sin esto, el título se queda con su ancho "natural" (sin envolver) hasta
+     último momento y termina empujando al importe de la derecha en vez de
+     usar el espacio real que le queda dentro de la fila. */
+  flex: 1;
+  min-width: 0;
+}
+
+.txIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.txIcon {
+  font-size: var(--font-size-xl);
+}
+
+.txTextGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.txTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.txDate {
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.txRateNote {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.txRight {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.txAmount {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.txCurrency {
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+}
+
+.tonePos {
+  color: var(--success);
+}
+
+.toneNeg {
+  color: var(--danger);
+}
+
+.toneGold {
+  color: var(--accent);
+}
+
+.txIconWrap.tonePos {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 20%, transparent);
+}
+
+.txIconWrap.toneNeg {
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+.txIconWrap.toneGold {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}

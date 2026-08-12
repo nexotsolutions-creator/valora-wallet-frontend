@@ -15,6 +15,11 @@ interface ModalProps extends PropsWithChildren {
   isOpen: boolean;
   onClose: () => void;
   ariaLabel: string;
+  // Apaga click-afuera y Escape sin tocar el focus trap (sigue andando igual,
+  // Tab no se escapa) — pensado para CompleteProfileModal, que no debe poder
+  // cerrarse hasta que el request resuelva 200. Default true, retrocompatible
+  // con los consumidores existentes.
+  dismissible?: boolean;
 }
 
 function getAnimationDurationMs(element: HTMLElement | null): number {
@@ -36,7 +41,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
 }
 
-export function Modal({ isOpen, onClose, ariaLabel, children }: ModalProps) {
+export function Modal({ isOpen, onClose, ariaLabel, dismissible = true, children }: ModalProps) {
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isClosing, setIsClosing] = useState(false);
   const wasOpenRef = useRef(isOpen);
@@ -112,6 +117,7 @@ export function Modal({ isOpen, onClose, ariaLabel, children }: ModalProps) {
   }
 
   function handleOverlayClick() {
+    if (!dismissible) return;
     // Ignorar clicks mientras cierra: el overlay sigue montado durante la
     // animación de salida, y un doble click ahí no debe repetir el onClose del caller.
     if (!isClosing) onClose();
@@ -119,7 +125,7 @@ export function Modal({ isOpen, onClose, ariaLabel, children }: ModalProps) {
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
-      if (!isClosing) onClose();
+      if (dismissible && !isClosing) onClose();
       return;
     }
     if (event.key !== "Tab" || !contentRef.current) return;

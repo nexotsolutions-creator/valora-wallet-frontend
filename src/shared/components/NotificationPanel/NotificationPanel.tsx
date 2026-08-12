@@ -10,10 +10,11 @@ export interface AppNotification {
 interface NotificationPanelProps {
   notifications: AppNotification[];
   onClose: () => void;
+  onDismiss: (id: string) => void;
   hidden: boolean;
 }
 
-export function NotificationPanel({ notifications, onClose, hidden }: NotificationPanelProps) {
+export function NotificationPanel({ notifications, onClose, onDismiss, hidden }: NotificationPanelProps) {
   return (
     <div id="notification-panel" className={styles.panel} hidden={hidden}>
       <div className={styles.panelHeader}>
@@ -28,6 +29,9 @@ export function NotificationPanel({ notifications, onClose, hidden }: Notificati
         </button>
       </div>
       <div className={styles.notifList}>
+        {notifications.length === 0 && (
+          <p className={styles.emptyState}>No tenés notificaciones todavía.</p>
+        )}
         {notifications.map((note) => (
           <div
             key={note.id}
@@ -38,6 +42,17 @@ export function NotificationPanel({ notifications, onClose, hidden }: Notificati
               <span className={styles.notifTitle}>{note.title}</span>
               <span className={styles.notifBody}>{note.body}</span>
             </div>
+            {/* Solo borra la notificación del panel, no la transacción real —
+                esa sigue viéndose en Actividad, que se lee de la misma fuente
+                de datos pero sin este filtro local. */}
+            <button
+              type="button"
+              className={styles.notifDismissButton}
+              onClick={() => onDismiss(note.id)}
+              aria-label={`Quitar notificación: ${note.title}`}
+            >
+              <span className="msym" aria-hidden="true">delete</span>
+            </button>
           </div>
         ))}
       </div>

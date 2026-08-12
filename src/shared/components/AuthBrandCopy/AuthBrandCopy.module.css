@@ -1,0 +1,21 @@
+.brandCopy {
+  position: relative;
+  z-index: 1;
+  max-width: 440px;
+}
+
+.brandHeadline {
+  font-size: clamp(28px, 3vw, var(--font-size-4xl));
+  font-weight: var(--font-weight-bold);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.brandSubtext {
+  font-size: var(--font-size-lg);
+  line-height: 28px;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-xl) 0;
+}

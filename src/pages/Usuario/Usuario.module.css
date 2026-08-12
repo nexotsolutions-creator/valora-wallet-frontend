@@ -9,6 +9,14 @@
   gap: var(--spacing-lg);
 }
 
+@media (min-width: 1024px) {
+  .page {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+  }
+}
+
 .card {
   width: 100%;
   max-width: 480px;

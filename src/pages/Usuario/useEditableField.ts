@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { getApiErrorMessage } from "../../shared/services/apiClient";
 
 export function useEditableField(
   initialValue: string,
   updateValue: (draft: string) => Promise<string>,
-  errorMessage: string,
 ) {
   const [value, setValue] = useState(initialValue);
   const [isEditing, setIsEditing] = useState(false);
@@ -28,8 +28,8 @@ export function useEditableField(
       const result = await updateValue(draft);
       setValue(result);
       setIsEditing(false);
-    } catch {
-      setError(errorMessage);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }

@@ -1,0 +1,18 @@
+.formIntro {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.formTitle {
+  font-size: clamp(24px, 4vw, var(--font-size-3xl));
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: var(--tracking-snug);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.formSubtitle {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  margin: 0;
+}

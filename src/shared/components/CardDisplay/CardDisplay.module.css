@@ -23,7 +23,7 @@
   right: -48px;
   width: 128px;
   height: 128px;
-  background: rgba(240, 180, 41, 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   border-radius: 50%;
   filter: blur(40px);
 }
@@ -49,11 +49,85 @@
   z-index: 1;
 }
 
+.cardNumberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: 8px;
+}
+
 .cardNumber {
   font-size: var(--font-size-xs);
   letter-spacing: var(--tracking-widest);
   color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.cardIconButton {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.cardIconButton:hover {
+  background: var(--bg-inset);
+  color: var(--text-primary);
+}
+
+/* Solo en el botón de copiar (no en el de ojo, no se pidió ahí) — resumen de
+   qué hace el ícono, no la confirmación de que ya copió (eso lo dice el toast
+   y el aria-label/ícono de check, esto es fijo siempre). Oculta por defecto
+   con opacity/pointer-events en vez de display:none para poder animar la
+   entrada, y con :focus-visible además de :hover para que también aparezca
+   navegando con teclado. */
+.copyTooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: normal;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+}
+
+.cardIconButton:hover .copyTooltip,
+.cardIconButton:focus-visible .copyTooltip {
+  opacity: 1;
+}
+
+.cardMeta {
+  display: flex;
+  gap: var(--spacing-lg);
   margin-bottom: 10px;
+  font-size: var(--font-size-2xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .cardHolderRow {

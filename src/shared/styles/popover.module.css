@@ -19,6 +19,24 @@
 
 @media (max-width: 859px) {
   .popover {
-    right: -16px;
+    /* En vez de seguir anclado por la derecha al botón que lo abre: en mobile
+       ese botón puede estar lejos del borde derecho real de la pantalla (hay
+       otro botón al lado), y un panel de 320px de ancho anclado ahí termina
+       saliéndose por la izquierda del viewport. position:fixed + left/right
+       en unidades de viewport lo hace ocupar el ancho disponible de verdad,
+       centrado bajo el header (64px, ver DashboardLayout.module.css) en vez
+       de intentar alinearse con precisión a un botón chico.
+       Los IDs "notification-panel"/"hamburger-panel" quedan igual, position:
+       fixed no cambia a qué elemento hacen referencia aria-controls. */
+    position: fixed;
+    top: 76px;
+    left: var(--spacing-md);
+    right: var(--spacing-md);
+    width: auto;
+    /* Con muchas notificaciones el panel podía estirarse más allá del borde
+       inferior de la pantalla — lo mismo no pasaba en desktop porque ahí
+       normalmente hay más alto disponible debajo del anchor. */
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
   }
 }

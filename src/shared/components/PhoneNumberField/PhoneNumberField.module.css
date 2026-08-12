@@ -1,0 +1,108 @@
+.phoneRow {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+}
+
+.phoneField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 0 0 auto;
+  width: 40%;
+}
+
+.phoneInputField {
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.select {
+  composes: select from "../../styles/formControl.module.css";
+}
+
+/* Copiado de CompleteProfileModal.module.css (su origen histórico) — mismo
+   criterio documentado ahí: alineado a mano con Input size="lg",
+   .select.select duplicado a propósito para ganar especificidad sobre la
+   regla compartida de formControl.module.css sin depender del orden de
+   aparición en el CSS final (no determinista, confirmado contra el build de
+   producción real). Nota: el select de "País de residencia" en
+   CompleteProfileModal.module.css Y en Registro.module.css usa cada uno su
+   propio bloque equivalente (.select/.select.select/.selectWrap/.selectIcon),
+   ninguno extraído acá — esa duplicación entre esos dos archivos ya existía
+   antes de esta tarea (desde el commit b6d89a0, cuando Registro.tsx sumó su
+   propio selector de residencia) y sigue sin resolver: hallazgo #2 de la
+   review de Gemini, documentado en ContextoPI2.md, parcialmente resuelto
+   (esta extracción cerró la duplicación del selector de *prefijo de
+   celular*, no la del selector de *país de residencia*) — no declarar
+   cerrado del todo hasta que también se extraiga ese bloque. */
+.select.select {
+  height: 56px;
+  padding: 0 44px 0 var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-elevated);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.selectWrap {
+  position: relative;
+}
+
+.selectIcon {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Breakpoint de wrap default (859px) — comportamiento original de
+   CompleteProfileModal/EditPhoneModal, sin cambios. `@media` no admite un
+   valor dinámico vía CSS custom property (no es `var()`-eable), así que el
+   breakpoint configurable (prop `wrapBreakpoint` en PhoneNumberField.tsx) se
+   resuelve con una clase modificadora (`.wrapAt639`) en vez de esto — el
+   `:not(.wrapAt639)` evita que esta regla y la de abajo se solapen entre
+   640-859px para el consumidor que pidió el breakpoint angosto. */
+@media (max-width: 859px) {
+  .phoneRow:not(.wrapAt639) {
+    flex-wrap: wrap;
+  }
+
+  .phoneRow:not(.wrapAt639) .phoneField {
+    width: 100%;
+  }
+
+  .phoneRow:not(.wrapAt639) .phoneInputField {
+    width: 100%;
+  }
+}
+
+/* Variante de breakpoint para Registro.tsx (`wrapBreakpoint={639}`) — antes
+   de esta extracción, su .phoneRow propio wrappeaba a 639px (coincidiendo
+   con el breakpoint mobile del resto de ese archivo, ver Registro.module.css),
+   no a 859px (el del modal). Sin esto, entre 640-859px Registro apilaría el
+   selector de prefijo y el input de celular donde antes iban en fila —
+   regresión visual real, hallazgo de la review de Copilot sobre el PR. */
+@media (max-width: 639px) {
+  .wrapAt639 {
+    flex-wrap: wrap;
+  }
+
+  .wrapAt639 .phoneField {
+    width: 100%;
+  }
+
+  .wrapAt639 .phoneInputField {
+    width: 100%;
+  }
+}

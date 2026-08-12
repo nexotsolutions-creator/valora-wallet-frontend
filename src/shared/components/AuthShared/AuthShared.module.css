@@ -1,0 +1,102 @@
+/* Clases puras (sin componente propio) compartidas entre Login.module.css y
+   Registro.module.css — se consumen vía `composes: x from "..."`, no se importan
+   directamente en JSX. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.inlineLink {
+  background: none;
+  border: none;
+  padding: 0;
+  /* Hereda el tamaño del texto que lo rodea (mismo criterio que el mockup: el
+     link de "Registrate" no tenía font-size propio, solo el de "¿Olvidaste tu
+     contraseña?" — ver .fieldHeader .inlineLink en Login.module.css). Un tamaño
+     fijo acá hacía que "Registrate" se viera más chico que el resto de la oración. */
+  font-size: inherit;
+  font-weight: var(--font-weight-semibold);
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.inlineLink:hover {
+  color: var(--accent-hover);
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--font-size-xs);
+}
+
+.fieldHint {
+  margin: 0;
+  margin-left: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--danger);
+}
+
+.actionButton {
+  width: 100%;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-lg);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.dividerText {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+.signupHint {
+  margin-top: var(--spacing-xl);
+  text-align: center;
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+}
+
+.footerNote {
+  margin-top: var(--spacing-xl);
+  text-align: center;
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-wide);
+}
+
+/* AuthBrandGlow no trae su propio display:none (en Login/Registro lo oculta
+   .brandPanel, que acá no existe) — replicamos la exclusión mutua con
+   AuthMobileGlow a mano: mobile usa el glow mobile, desktop/tablet usa este. */
+.brandGlowWrapper {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .brandGlowWrapper {
+    display: block;
+  }
+}

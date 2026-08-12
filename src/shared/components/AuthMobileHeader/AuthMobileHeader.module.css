@@ -1,0 +1,40 @@
+.mobileHeader {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+@media (max-width: 639px) {
+  .mobileHeader {
+    display: flex;
+  }
+}
+
+/* Sobrescribe el display:none de arriba en cualquier breakpoint. Selector
+   compuesto para tener mayor especificidad que .mobileHeader, sin depender
+   del orden de las reglas en el archivo. Ver AuthMobileHeader.tsx */
+.mobileHeader.alwaysVisible {
+  display: flex;
+}
+
+.mobileLogo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.mobileWordmark {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.wordmarkMuted {
+  color: var(--text-tertiary);
+}
