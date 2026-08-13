@@ -243,8 +243,10 @@ export function Dashboard() {
     // pide nada, es 1 a 1: el backend rechaza fromCurrency === toCurrency).
     const contributions = currentBalances.map(async (bal) => {
       if (bal.amount <= 0 || bal.currencyCode === currency) return bal.amount;
-      const quote = await getQuote(token, bal.currencyCode, currency, bal.amount, "source", controller.signal);
-      return quote.targetAmount;
+      // Cotizamos 1 unidad para evitar el límite de 1,000,000 en el backend (AMOUNT_TOO_LARGE).
+      // Luego multiplicamos la tasa real (que ya tiene la comisión) por nuestro saldo.
+      const quote = await getQuote(token, bal.currencyCode, currency, 1, "source", controller.signal);
+      return bal.amount * quote.exchangeRate;
     });
 
     Promise.all(contributions)
