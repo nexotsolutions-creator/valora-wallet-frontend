@@ -1,30 +1,51 @@
-.googleButton {
-  composes: actionButton from "../AuthShared/AuthShared.module.css";
+/* wrapper mide el ancho completo del formulario y centra — container (el
+   hijo, adentro) es el que recibe el ref que le pasamos a Google, con un
+   ancho fijo en px seteado desde GoogleButton.tsx (no relativo/100%), para
+   que no le quede margen propio dentro del cual Google pueda renderizar
+   algo que no controlamos (ver comentario en GoogleButton.tsx, setup()). */
+.wrapper {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 10px;
 }
 
-/* Button compartido: variant="secondary" solo cambia border-color en hover, así que
-   alcanza con revertir esa propiedad puntual mientras el botón está aria-disabled */
-.googleButton[aria-disabled="true"] {
-  cursor: not-allowed;
-}
-
-.googleButton[aria-disabled="true"]:hover {
-  border-color: var(--border);
-}
-
-/* Botón real de Google Identity Services, renderizado pero no visible — se le
-   hace click por código desde .googleButton (ver GoogleButton.tsx). No usa
-   display:none: GIS necesita el elemento medible/en el layout para renderizar
-   e interactuar con él. */
-.hiddenGoogleButton {
-  position: absolute;
-  width: 1px;
-  height: 1px;
+.container {
+  /* El "G" cuadrado que renderiza Google no siempre resuelve bien las puntas
+     redondeadas por su cuenta (varía entre entornos) — se recorta acá con
+     nuestro propio radio en vez de depender de shape:"pill" del lado de
+     Google (sacado de renderButton() en GoogleButton.tsx). 16px, no los
+     12px del resto de los botones de la app: con 12px quedaba un filo
+     blanco de la placa del ícono asomando en las esquinas izquierdas
+     (screenshot 13/08) — Google posiciona esa placa con su propio
+     padding interno, que no controlamos, y 12px no alcanzaba a comerlo del
+     todo. Si hace falta que combine exacto con el resto, es un ajuste
+     visual para Analía, no de estructura. Se mantiene como red de
+     contención por si queda algún desajuste de sub-píxel, aunque el ancho
+     fijo (ver GoogleButton.tsx) ya debería evitar que haga falta recortar
+     nada en la práctica. */
+  border-radius: 16px;
   overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
+}
+
+/* Descendiente, no hijo directo (div[role="button"] puede no colgar
+   directo de .container según cómo termine anidando GIS su markup, y no
+   pude inspeccionar el DOM real para confirmarlo) — reemplaza el anillo de
+   foco azul default del navegador por el acento de marca. box-shadow inset,
+   no outline: el overflow:hidden de .container recorta cualquier cosa
+   pintada fuera de sus límites, y un outline se pinta afuera del borde del
+   botón (quedaría cortado) — el inset lo pinta adentro, en el mismo espacio
+   que ya ocupa el botón, así que sobrevive al recorte. !important porque es
+   un widget de terceros: si Google fija outline vía style inline, gana por
+   especificidad salvo que lo forcemos acá. No elimina el foco, solo cambia
+   cómo se pinta — mantiene accesibilidad de foco visible. */
+.container [role="button"]:focus-visible {
+  outline: none !important;
+  box-shadow: inset 0 0 0 2px var(--accent) !important;
+}
+
+.unavailable {
+  margin: 0;
+  padding: var(--spacing-md) 0;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
 }

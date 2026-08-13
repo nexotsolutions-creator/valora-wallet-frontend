@@ -1,0 +1,15 @@
+/* Shell compartido para contenido accesible pero oculto visualmente (Dashboard,
+   Usuario). Cada .module.css local lo suma vía `composes`, mismo patrón que
+   popover.module.css/formControl.module.css. Técnica estándar de "sr-only":
+   clip en vez de display:none, que sacaría el elemento del árbol de
+   accesibilidad y lo dejaría inútil para lectores de pantalla. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDocumentTypes } from "../services/catalogService";
+import { useRequestGuard } from "./useRequestGuard";
 import type { CountryCode } from "../types/models";
 
 // Dato fijo por sesión (ver catalogService.ts) — cacheado a nivel de módulo
@@ -41,21 +42,22 @@ function fetchDocumentTypesOnce(): Promise<Record<CountryCode, string>> {
 // catálogo que no cargó.
 export function useDocumentTypes(): Record<CountryCode, string> | null {
   const [documentTypes, setDocumentTypes] = useState<Record<CountryCode, string> | null>(cachedResult);
+  const requestGuard = useRequestGuard();
 
   useEffect(() => {
     if (documentTypes) return;
-    let cancelled = false;
+    const requestId = requestGuard.start();
     fetchDocumentTypesOnce()
       .then((data) => {
-        if (!cancelled) setDocumentTypes(data);
+        if (requestGuard.isCurrent(requestId)) setDocumentTypes(data);
       })
       .catch(() => {
         // Silencioso a propósito: el fallback a "Documento" ya cubre el caso.
       });
     return () => {
-      cancelled = true;
+      requestGuard.invalidate();
     };
-  }, [documentTypes]);
+  }, [documentTypes, requestGuard]);
 
   return documentTypes;
 }

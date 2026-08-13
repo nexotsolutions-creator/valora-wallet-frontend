@@ -1,0 +1,35 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: min(400px, 85vw);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.warning {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Mismas clases que ya usa EditPhoneModal (y la edición inline de Alias) en
+   esta misma página — mismo look de acciones/error/cancelar en toda la
+   pantalla, en vez de reinventarlas acá. */
+.actions {
+  composes: editActions from "./Usuario.module.css";
+}
+
+.cancelButton {
+  composes: cancelButton from "./Usuario.module.css";
+}
+
+.error {
+  composes: error from "./Usuario.module.css";
+}

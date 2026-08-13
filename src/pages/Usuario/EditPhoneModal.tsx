@@ -64,13 +64,17 @@ export function EditPhoneModal({ isOpen, onClose }: EditPhoneModalProps) {
     setIsSubmitting(true);
     try {
       // PATCH /auth/me no tiene versión parcial — completeProfileSchema (backend)
-      // exige phone+country+du juntos. country/du van con el valor actual del
-      // usuario, sin exponerlos como editables acá (este modal solo edita
-      // celular) — mismo contrato que ya usa CompleteProfileModal.
+      // exige phone+country+du (+dateOfBirth cuando el backend lo sume) juntos.
+      // country/du/dateOfBirth van con el valor actual del usuario, sin
+      // exponerlos como editables acá (este modal solo edita celular) — mismo
+      // contrato que ya usa CompleteProfileModal. user.dateOfBirth ya viene en
+      // DD/MM/YYYY desde el backend (ver formatDate en authController.ts), no
+      // hace falta pasarlo por toBackendDate.
       const updated = await completeProfile(
         resolveE164Phone(phoneCountryCode, phoneLocal),
         user.country,
         user.du ?? "",
+        user.dateOfBirth ?? "",
         token,
       );
       updateUser(updated);

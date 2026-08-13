@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
+import { useCopyToClipboard } from "../../hooks/useCopyToClipboard";
 import styles from "./CardDisplay.module.css";
 
 const EXPIRY_MIN_YEARS = 2;
 const EXPIRY_MAX_YEARS = 4;
-const COPY_CONFIRMATION_MS = 1500;
 
 // Exportado para que los callers armen su propio onCopy sin hardcodear el
 // texto aparte (ver por qué CardDisplay no muestra su propio toast más abajo).
@@ -93,10 +93,7 @@ export function CardDisplay({ brand = "VALORA PLATINUM", onCopy }: CardDisplayPr
   }, [user?.id]);
 
   const [isRevealed, setIsRevealed] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  useEffect(() => () => clearTimeout(copyTimeoutRef.current), []);
+  const { isCopied, copy, reset: resetCopied } = useCopyToClipboard(onCopy);
 
   function toggleRevealed() {
     setIsRevealed((v) => !v);
@@ -104,21 +101,7 @@ export function CardDisplay({ brand = "VALORA PLATINUM", onCopy }: CardDisplayPr
     // COPY_CONFIRMATION_MS revivía el ícono de "copiado" de la vez anterior
     // (isCopied vive en CardDisplay, no en el botón — no se resetea solo por
     // desmontar/remontar el botón de copiar al togglear el ojo).
-    clearTimeout(copyTimeoutRef.current);
-    setIsCopied(false);
-  }
-
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(cardDigits);
-      setIsCopied(true);
-      onCopy?.();
-      clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(() => setIsCopied(false), COPY_CONFIRMATION_MS);
-    } catch {
-      // Portapapeles bloqueado (permisos, contexto no seguro) — no rompe nada,
-      // simplemente no hay confirmación visual de que se copió.
-    }
+    resetCopied();
   }
 
   return (
@@ -138,7 +121,7 @@ export function CardDisplay({ brand = "VALORA PLATINUM", onCopy }: CardDisplayPr
               <button
                 type="button"
                 className={styles.cardIconButton}
-                onClick={handleCopy}
+                onClick={() => copy(cardDigits)}
                 aria-label={isCopied ? "Número copiado" : "Copiar número de tarjeta"}
               >
                 <span className="msym" style={{ fontSize: 18 }} aria-hidden="true">

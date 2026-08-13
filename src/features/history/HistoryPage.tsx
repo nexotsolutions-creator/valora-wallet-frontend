@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../shared/auth/useAuth";
 import { Card } from "../../shared/components/Card/Card";
+import { TransactionDetailModal } from "../../shared/components/TransactionDetailModal/TransactionDetailModal";
 import { getApiErrorMessage } from "../../shared/services/apiClient";
 import { getTransactions, type TransactionsPagination } from "../../shared/services/transactionService";
+import { useRequestGuard } from "../../shared/hooks/useRequestGuard";
 import type { Transaction, TransactionType } from "../../shared/types/models";
 import { TransactionHistory } from "./TransactionHistory";
 import styles from "./HistoryPage.module.css";
@@ -27,6 +29,14 @@ export function HistoryPage() {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const historyRequest = useRequestGuard();
+
+  function openDetail(transaction: Transaction) {
+    setSelectedTransaction(transaction);
+    setIsDetailOpen(true);
+  }
 
   // Cambiar el filtro siempre vuelve a la página 1 — una página vieja puede no
   // existir más para el nuevo filtro (menos resultados que antes).
@@ -36,7 +46,7 @@ export function HistoryPage() {
 
   useEffect(() => {
     if (!token) return;
-    let cancelled = false;
+    const requestId = historyRequest.start();
 
     async function loadTransactions() {
       setIsLoading(true);
@@ -47,22 +57,22 @@ export function HistoryPage() {
           page,
           type: typeFilter === "ALL" ? undefined : typeFilter,
         });
-        if (cancelled) return;
+        if (!historyRequest.isCurrent(requestId)) return;
         setTransactions(result.transactions);
         setPagination(result.pagination);
       } catch (err) {
-        if (cancelled) return;
+        if (!historyRequest.isCurrent(requestId)) return;
         setError(getApiErrorMessage(err));
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (historyRequest.isCurrent(requestId)) setIsLoading(false);
       }
     }
 
     loadTransactions();
     return () => {
-      cancelled = true;
+      historyRequest.invalidate();
     };
-  }, [token, page, typeFilter]);
+  }, [token, page, typeFilter, historyRequest]);
 
   const totalPages = pagination?.totalPages ?? 1;
 
@@ -87,7 +97,9 @@ export function HistoryPage() {
       <Card className={styles.card}>
         {isLoading && <p className={styles.stateMessage}>Cargando...</p>}
         {!isLoading && error && <p className={styles.stateMessage}>{error}</p>}
-        {!isLoading && !error && <TransactionHistory transactions={transactions} />}
+        {!isLoading && !error && (
+          <TransactionHistory transactions={transactions} onSelectTransaction={openDetail} />
+        )}
       </Card>
 
       {!isLoading && !error && totalPages > 1 && (
@@ -111,6 +123,12 @@ export function HistoryPage() {
           </button>
         </div>
       )}
+
+      <TransactionDetailModal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        transaction={selectedTransaction}
+      />
     </div>
   );
 }

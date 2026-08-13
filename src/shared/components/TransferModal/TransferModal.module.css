@@ -1,0 +1,88 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: min(360px, 80vw);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: calc(var(--spacing-xs) * -1) 0 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.identifierRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.identifierRow > *:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.verifyButton {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.select {
+  composes: select from "../../styles/formControl.module.css";
+}
+
+.balanceHint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--font-size-xs);
+}
+
+.recipientCard {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-inset);
+  border: 1px solid var(--border);
+}
+
+.recipientLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.recipientName {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.recipientDoc {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}

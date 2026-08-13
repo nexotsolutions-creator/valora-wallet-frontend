@@ -4,6 +4,7 @@ import logo from "../../shared/assets/valora-logo.png";
 import { useAuth } from "../../shared/auth/useAuth";
 import { BottomNav, type NavEntry } from "../../shared/components/BottomNav/BottomNav";
 import { CompleteProfileModal } from "../../shared/components/CompleteProfileModal/CompleteProfileModal";
+import { HelpModal } from "../../shared/components/HelpModal/HelpModal";
 import { LegalModal, type LegalVariant } from "../../shared/components/LegalModal/LegalModal";
 import { NotificationPanel, type AppNotification } from "../../shared/components/NotificationPanel/NotificationPanel";
 import { Sidebar } from "../../shared/components/Sidebar/Sidebar";
@@ -12,6 +13,7 @@ import { ChatbotFAB } from "../../features/chatbot/ChatbotFAB";
 import { ChatbotWidget } from "../../features/chatbot/ChatbotWidget";
 import { getTransactions } from "../../shared/services/transactionService";
 import { deriveNotifications } from "../../shared/utils/deriveNotifications";
+import { useRequestGuard } from "../../shared/hooks/useRequestGuard";
 import styles from "./DashboardLayout.module.css";
 
 // Contrato del Outlet entre este layout y las páginas que cuelgan de él —
@@ -87,6 +89,7 @@ export function DashboardLayout() {
   const [openPanel, setOpenPanel] = useState<"notif" | "hamburger" | null>(null);
   const [legalOpen, setLegalOpen] = useState(false);
   const [legalVariant, setLegalVariant] = useState<LegalVariant>("terms");
+  const [helpOpen, setHelpOpen] = useState(false);
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const notifAnchorRef = useRef<HTMLDivElement>(null);
   const hamburgerAnchorRef = useRef<HTMLDivElement>(null);
@@ -94,6 +97,7 @@ export function DashboardLayout() {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => readDismissedIds());
   const { token, user, logout } = useAuth();
   const [seenIds, setSeenIds] = useState<Set<string>>(() => readSeenIds(user?.id));
+  const notifOpenRequest = useRequestGuard();
   const visibleNotifications = notifications.filter((note) => !dismissedIds.has(note.id));
   const hasUnread = visibleNotifications.some((note) => note.unread && !seenIds.has(note.id));
   const navigate = useNavigate();
@@ -164,9 +168,9 @@ export function DashboardLayout() {
   // componente se desmontó) antes de que la promesa resolviera.
   useEffect(() => {
     if (openPanel !== "notif") return;
-    let cancelled = false;
+    const requestId = notifOpenRequest.start();
     loadNotifications().then((derived) => {
-      if (cancelled || !derived) return;
+      if (!notifOpenRequest.isCurrent(requestId) || !derived) return;
       setSeenIds((prev) => {
         const newIds = derived.map((note) => note.id).filter((id) => !prev.has(id));
         if (newIds.length === 0) return prev;
@@ -177,9 +181,9 @@ export function DashboardLayout() {
       });
     });
     return () => {
-      cancelled = true;
+      notifOpenRequest.invalidate();
     };
-  }, [openPanel, loadNotifications, user?.id]);
+  }, [openPanel, loadNotifications, user?.id, notifOpenRequest]);
 
   function handleLogout() {
     logout();
@@ -339,6 +343,16 @@ export function DashboardLayout() {
               <button type="button" className={styles.hamburgerItem} onClick={() => openLegal("privacy")}>
                 Políticas de privacidad
               </button>
+              <button
+                type="button"
+                className={styles.hamburgerItem}
+                onClick={() => {
+                  setHelpOpen(true);
+                  setOpenPanel(null);
+                }}
+              >
+                Ayuda
+              </button>
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
                 className={styles.hamburgerItem}
@@ -356,12 +370,19 @@ export function DashboardLayout() {
           </div>
         </div>
       </header>
-      <Sidebar items={NAV_ITEMS} onLogout={handleLogout} onOpenLegal={openLegal} onToggleChatbot={handleToggleChatbot} />
+      <Sidebar
+        items={NAV_ITEMS}
+        onLogout={handleLogout}
+        onOpenLegal={openLegal}
+        onToggleChatbot={handleToggleChatbot}
+        onOpenHelp={() => setHelpOpen(true)}
+      />
       <main className={styles.main}>
         <Outlet context={outletContextValue} />
       </main>
       <BottomNav items={NAV_ITEMS} />
       <LegalModal isOpen={legalOpen} onClose={() => setLegalOpen(false)} variant={legalVariant} />
+      <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
       {chatbotOpen && <ChatbotWidget onClose={handleCloseChatbot} />}
       <ChatbotFAB onOpen={handleOpenChatbot} hidden={chatbotOpen} />
       {/* Sin prop de open/close manual — se abre y cierra solo en función de

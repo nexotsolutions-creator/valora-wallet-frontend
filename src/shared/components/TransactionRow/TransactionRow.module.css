@@ -11,8 +11,17 @@
   padding: var(--spacing-sm);
   margin: 0 calc(var(--spacing-sm) * -1);
   border-radius: var(--radius-md);
-  cursor: default;
+  cursor: pointer;
   transition: background-color 0.15s ease;
+  /* Reset de <button>: la fila entera es clickeable (ver detalle de
+     transacción), no solo el ícono — necesita ser <button> por accesibilidad
+     de teclado/lector de pantalla, así que hay que resetearle los defaults. */
+  width: 100%;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
 }
 
 @media (max-width: 480px) {

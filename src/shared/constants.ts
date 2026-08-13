@@ -1,4 +1,19 @@
+import type { CurrencyCode } from "./types/models";
+
 export const SUPPORT_EMAIL = "nexot.solutions@gmail.com";
+
+// Monedas que soporta la wallet — mismo orden en los 3 lugares que lo
+// consumían por separado (grid de balances/selector de Dashboard, selector de
+// moneda del modal de depósito, ExchangeForm, ConversionModal) antes de
+// centralizarse acá.
+export const CURRENCY_OPTIONS: CurrencyCode[] = ["USD", "EUR", "ARS"];
+
+// No hay endpoint de cotización previa — la tasa real se calcula recién al
+// confirmar, del lado del backend. Usado por ExchangeForm y ConversionModal
+// (los dos formularios de conversión; Dashboard.tsx no lo necesita, no
+// renderiza un form de conversión directo, solo abre ConversionModal).
+export const RATE_NOT_AVAILABLE_NOTE =
+  "La tasa se calcula al confirmar, no hay cotización previa disponible todavía.";
 
 // Prefijo de la key de localStorage del historial del chatbot — la key final
 // es `${CHATBOT_HISTORY_KEY_PREFIX}${userId}`. Compartido entre

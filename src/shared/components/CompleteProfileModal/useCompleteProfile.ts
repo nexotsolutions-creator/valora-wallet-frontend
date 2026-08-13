@@ -15,7 +15,7 @@ export function useCompleteProfile() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(phone: string, country: CountryCode, du: string) {
+  async function submit(phone: string, country: CountryCode, du: string, dateOfBirth: string) {
     if (!token) {
       setError("Sesión no válida, iniciá sesión de nuevo.");
       return;
@@ -23,7 +23,7 @@ export function useCompleteProfile() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const user = await completeProfile(phone, country, du, token);
+      const user = await completeProfile(phone, country, du, dateOfBirth, token);
       if (!user.profileComplete) {
         setError("No pudimos confirmar la actualización, probá de nuevo.");
         setIsSubmitting(false);

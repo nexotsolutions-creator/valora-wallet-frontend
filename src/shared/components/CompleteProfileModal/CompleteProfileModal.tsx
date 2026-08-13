@@ -8,6 +8,7 @@ import type { CountryCode } from "../../types/models";
 import { useCompleteProfile } from "./useCompleteProfile";
 import { useDocumentTypes } from "../../hooks/useDocumentTypes";
 import { resolveE164Phone } from "../../utils/phone";
+import { MAX_BIRTHDATE, toBackendDate } from "../../utils/date";
 import styles from "./CompleteProfileModal.module.css";
 
 const DEFAULT_PHONE_COUNTRY_CODE = PHONE_COUNTRY_CODES[0].code;
@@ -18,13 +19,14 @@ export function CompleteProfileModal() {
   const [phoneLocal, setPhoneLocal] = useState("");
   const [country, setCountry] = useState<CountryCode>(DEFAULT_RESIDENCE_COUNTRY);
   const [du, setDu] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const { isSubmitting, error, submit } = useCompleteProfile();
   const documentTypes = useDocumentTypes();
   const documentLabel = documentTypes?.[country] ?? "Documento";
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    submit(resolveE164Phone(phoneCountryCode, phoneLocal), country, du);
+    submit(resolveE164Phone(phoneCountryCode, phoneLocal), country, du, toBackendDate(dateOfBirth));
   }
 
   return (
@@ -34,6 +36,19 @@ export function CompleteProfileModal() {
         <p className={styles.subtitle}>
           Necesitamos tu celular y tu documento para que puedas operar con tu billetera.
         </p>
+
+        <Input
+          id="profileDateOfBirth"
+          label="Fecha de nacimiento"
+          type="date"
+          size="lg"
+          value={dateOfBirth}
+          onChange={(event) => setDateOfBirth(event.target.value)}
+          autoComplete="bday"
+          max={MAX_BIRTHDATE}
+          className={styles.dateInput}
+          required
+        />
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="profileCountry">País de residencia</label>

@@ -7,6 +7,10 @@
   gap: var(--spacing-lg);
 }
 
+.srOnly {
+  composes: srOnly from "../../shared/styles/visuallyHidden.module.css";
+}
+
 @media (max-width: 859px) {
   .page {
     grid-template-columns: 1fr;

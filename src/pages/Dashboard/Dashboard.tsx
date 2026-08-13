@@ -8,27 +8,25 @@ import { Input } from "../../shared/components/Input/Input";
 import { Modal } from "../../shared/components/Modal/Modal";
 import { Toast } from "../../shared/components/Toast/Toast";
 import { useToast } from "../../shared/components/Toast/useToast";
+import { TransactionDetailModal } from "../../shared/components/TransactionDetailModal/TransactionDetailModal";
 import { TransactionRow } from "../../shared/components/TransactionRow/TransactionRow";
+import { TransferModal } from "../../shared/components/TransferModal/TransferModal";
 import { getApiErrorMessage } from "../../shared/services/apiClient";
 import { getBalances } from "../../shared/services/balanceService";
-import { deposit, getTransactions } from "../../shared/services/transactionService";
+import { deposit, getQuote, getTransactions, type TransferDestination } from "../../shared/services/transactionService";
 import type { Balance, CurrencyCode, Transaction } from "../../shared/types/models";
+import { CURRENCY_OPTIONS } from "../../shared/constants";
+import { balanceFor } from "../../shared/utils/balances";
+import { INVALID_AMOUNT_MESSAGE, parsePositiveAmount } from "../../shared/utils/amount";
+import { useRequestGuard } from "../../shared/hooks/useRequestGuard";
 import type { DashboardOutletContext } from "../../layouts/DashboardLayout/DashboardLayout";
 import styles from "./Dashboard.module.css";
-
-const CURRENCY_OPTIONS: CurrencyCode[] = ["USD", "EUR", "ARS"];
 
 const CURRENCY_META: Record<CurrencyCode, { label: string; flagChar: string }> = {
   USD: { label: "Dólares", flagChar: "US" },
   EUR: { label: "Euros", flagChar: "EU" },
   ARS: { label: "Pesos AR", flagChar: "AR" },
 };
-
-// No hay endpoint de cotización pública todavía (el backend solo calcula la tasa
-// real al confirmar un /transactions/exchange) — esto es una aproximación de
-// cliente únicamente para poder mostrar "Balance total" convertido a otra
-// moneda. No es la tasa que se aplica en una operación real.
-const APPROX_RATES: Record<CurrencyCode, number> = { USD: 1, EUR: 0.92, ARS: 1350 };
 
 const LATEST_TRANSACTIONS_LIMIT = 5;
 
@@ -68,18 +66,22 @@ export function Dashboard() {
   const [conversionMode, setConversionMode] = useState<"BUY" | "SELL">("BUY");
   const [isConversionOpen, setIsConversionOpen] = useState(false);
 
-  // Contador de generación, no boolean: con un solo cancelledRef reseteado a
-  // false al arrancar cada corrida, un request de una corrida ANTERIOR que
-  // sigue en vuelo podía "revivir" — el reset de la corrida nueva pisaba el
-  // true que había puesto el cleanup de la corrida vieja, así que si esa
-  // respuesta vieja llegaba después (fuera de orden), pasaba el chequeo igual
-  // y pisaba el estado correcto con datos viejos. Acá cada corrida compara
-  // contra su propio requestId capturado al arrancar — no hay reset que pueda
-  // borrar la señal de una corrida anterior.
-  const requestIdRef = useRef(0);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  function openDetail(transaction: Transaction) {
+    setSelectedTransaction(transaction);
+    setIsDetailOpen(true);
+  }
+
+  // Ver useRequestGuard.ts para el porqué de un contador de generación en vez
+  // de un boolean reseteado a mano.
+  const dashboardRequest = useRequestGuard();
 
   const loadDashboardData = useCallback(async () => {
-    const requestId = ++requestIdRef.current;
+    const requestId = dashboardRequest.start();
     setIsLoading(true);
     setError(null);
     try {
@@ -87,31 +89,30 @@ export function Dashboard() {
         getBalances(token as string),
         getTransactions(token as string, { limit: LATEST_TRANSACTIONS_LIMIT }),
       ]);
-      if (requestIdRef.current !== requestId) return;
+      if (!dashboardRequest.isCurrent(requestId)) return;
       setBalances(balancesData);
       setTransactions(transactionsResult.transactions);
     } catch (err) {
-      if (requestIdRef.current !== requestId) return;
+      if (!dashboardRequest.isCurrent(requestId)) return;
       setError(getApiErrorMessage(err));
     } finally {
-      if (requestIdRef.current === requestId) setIsLoading(false);
+      if (dashboardRequest.isCurrent(requestId)) setIsLoading(false);
     }
-  }, [token]);
+  }, [token, dashboardRequest]);
 
   useEffect(() => {
     if (!token) return;
     loadDashboardData();
-    // Defensivo, no por un bug encontrado hoy: bumpea el contador al
+    // Defensivo, no por un bug encontrado hoy: invalida la corrida al
     // desmontar/cambiar deps para que un request en vuelo justo antes de
     // navegar fuera de Dashboard no aplique su resultado sobre una instancia
     // ya desmontada. En React 18+ un setState post-unmount ya es un no-op
     // silencioso — mismo criterio que isMountedRef en useChatbot.ts, por
-    // consistencia dentro del mismo PR. Sigue siendo monótono creciente (no
-    // resetea a un valor fijo), así que no reabre la carrera de arriba.
+    // consistencia dentro del mismo PR.
     return () => {
-      requestIdRef.current += 1;
+      dashboardRequest.invalidate();
     };
-  }, [token, loadDashboardData]);
+  }, [token, loadDashboardData, dashboardRequest]);
 
   function openDepositModal() {
     setDepositCurrency("USD");
@@ -134,13 +135,21 @@ export function Dashboard() {
     onTransactionCreated();
   }
 
+  function handleTransferSuccess(transaction: Transaction, destination: TransferDestination) {
+    setIsTransferOpen(false);
+    const sentAmount = transaction.sourceAmount?.toLocaleString("es-AR", { maximumFractionDigits: 2 }) ?? "0";
+    showToast(`Transferiste ${sentAmount} ${transaction.sourceCurrency ?? ""} a ${destination.firstName} ${destination.lastName}.`);
+    loadDashboardData();
+    onTransactionCreated();
+  }
+
   async function handleDepositSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setDepositError(null);
 
-    const parsedAmount = Number(depositAmount);
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setDepositError("Ingresá un monto válido, mayor a cero.");
+    const parsedAmount = parsePositiveAmount(depositAmount);
+    if (parsedAmount === null) {
+      setDepositError(INVALID_AMOUNT_MESSAGE);
       return;
     }
 
@@ -185,18 +194,90 @@ export function Dashboard() {
     setHidden((prev) => ({ ...prev, [code]: !prev[code] }));
   }
 
-  function balanceFor(code: CurrencyCode): number {
-    return balances?.find((bal) => bal.currencyCode === code)?.amount ?? 0;
-  }
+  // Se guarda junto con la moneda a la que corresponde — así, al cambiar el
+  // selector, el total viejo (todavía de la moneda anterior) no se muestra
+  // ni un frame relabeleado bajo el código de la moneda nueva: el render de
+  // abajo compara totalConverted.currency contra totalCurrency y solo lo usa
+  // si coinciden, mostrando "Calculando…" mientras no coinciden.
+  const [totalConverted, setTotalConverted] = useState<{ currency: CurrencyCode; amount: number } | null>(null);
+  // Distinto de "todavía no llegó la cotización": si falla de verdad, hay que
+  // poder distinguirlo de "está cargando" (que también se ve como
+  // totalConverted sin coincidir con totalCurrency) para no quedar en
+  // "Calculando…" para siempre sin ningún mensaje ni forma de reintentar.
+  const [totalError, setTotalError] = useState(false);
+  const [totalRetryTick, setTotalRetryTick] = useState(0);
+  // Mismo criterio que dashboardRequest de arriba — evita que una cotización
+  // vieja (de la moneda anterior en el selector) pise el total con datos que
+  // ya no corresponden si las respuestas llegan desordenadas.
+  const totalRequest = useRequestGuard();
 
-  const totalUsd = CURRENCY_OPTIONS.reduce((sum, code) => sum + balanceFor(code) / APPROX_RATES[code], 0);
-  const totalConverted = Math.round(totalUsd * APPROX_RATES[totalCurrency]);
+  // balances en un ref (actualizado en cada render, antes del efecto de abajo
+  // porque los efectos corren en orden de declaración dentro del mismo
+  // commit): el efecto de cotización depende de balancesKey, no de la
+  // referencia del array — loadDashboardData() trae un array nuevo en cada
+  // recarga aunque el monto de una sola moneda haya cambiado, y sin esto
+  // dispararía cotizaciones de nuevo para todas las monedas cada vez.
+  const balancesRef = useRef(balances);
+  useEffect(() => {
+    balancesRef.current = balances;
+  }, [balances]);
+  // null distinto de "" a propósito: si fueran el mismo valor, la transición
+  // real de "todavía no cargaron los balances" (null) a "cargaron y la
+  // cuenta está en cero" ([]) no cambiaría la dependencia del efecto de abajo
+  // y nunca llegaría a correr para esa cuenta.
+  const balancesKey = balances === null
+    ? null
+    : balances.map((bal) => `${bal.currencyCode}:${bal.amount}`).sort().join("|");
+
+  useEffect(() => {
+    if (!token || !balancesRef.current) return;
+    const requestId = totalRequest.start();
+    const currentBalances = balancesRef.current;
+    const currency = totalCurrency;
+    const controller = new AbortController();
+    setTotalError(false);
+
+    // Antes esto era una tabla de tasas aproximada del lado del cliente — ahora
+    // que existe /transactions/quote con la tasa real, se pide una cotización
+    // por cada moneda con saldo (misma moneda que la elegida en el selector no
+    // pide nada, es 1 a 1: el backend rechaza fromCurrency === toCurrency).
+    const contributions = currentBalances.map(async (bal) => {
+      if (bal.amount <= 0 || bal.currencyCode === currency) return bal.amount;
+      const quote = await getQuote(token, bal.currencyCode, currency, bal.amount, "source", controller.signal);
+      return quote.targetAmount;
+    });
+
+    Promise.all(contributions)
+      .then((amounts) => {
+        if (!totalRequest.isCurrent(requestId)) return;
+        setTotalConverted({ currency, amount: amounts.reduce((sum, value) => sum + value, 0) });
+      })
+      .catch(() => {
+        if (!totalRequest.isCurrent(requestId) || controller.signal.aborted) return;
+        // Tasa real no disponible para alguna moneda — mejor mostrar que no
+        // está disponible que un total parcial o con una tasa inventada.
+        setTotalError(true);
+      });
+
+    return () => {
+      // Corta las cotizaciones en vuelo si el selector cambia de nuevo (o el
+      // componente se desmonta) antes de que resuelvan — ya son descartadas
+      // por el chequeo de requestId de arriba, pero sin esto igual corrían
+      // hasta el final del lado del servidor sin que nadie use el resultado.
+      controller.abort();
+    };
+  }, [token, balancesKey, totalCurrency, totalRetryTick, totalRequest]);
   const totalDisplayValue = totalHidden
     ? "••••••"
-    : `${totalCurrency} ${totalConverted.toLocaleString("es-AR", { maximumFractionDigits: 2 })}`;
+    : totalError
+      ? "No disponible"
+      : totalConverted && totalConverted.currency === totalCurrency
+        ? `${totalCurrency} ${totalConverted.amount.toLocaleString("es-AR", { maximumFractionDigits: 2 })}`
+        : "Calculando…";
 
   return (
     <div className={styles.page}>
+      <h1 className={styles.srOnly}>Inicio</h1>
       <section className={styles.balanceSection}>
         <div className={styles.balanceCard}>
           <div className={styles.balanceCardTop}>
@@ -204,6 +285,15 @@ export function Dashboard() {
               <div className={styles.label}>Balance total</div>
               <div className={styles.totalRow}>
                 <span className={styles.totalValue}>{totalDisplayValue}</span>
+                {totalError && !totalHidden && (
+                  <button
+                    type="button"
+                    className={styles.txLink}
+                    onClick={() => setTotalRetryTick((tick) => tick + 1)}
+                  >
+                    Reintentar
+                  </button>
+                )}
                 <button
                   type="button"
                   className={styles.eyeButton}
@@ -274,7 +364,7 @@ export function Dashboard() {
                     </button>
                   </div>
                   <span className={styles.currencyCardValue}>
-                    {isHidden ? "••••••" : `${code} ${balanceFor(code).toLocaleString("es-AR", { maximumFractionDigits: 2 })}`}
+                    {isHidden ? "••••••" : `${code} ${balanceFor(balances, code).toLocaleString("es-AR", { maximumFractionDigits: 2 })}`}
                   </span>
                 </div>
               );
@@ -294,10 +384,7 @@ export function Dashboard() {
               <span className="msym" style={{ fontSize: 18 }} aria-hidden="true">arrow_downward</span>
               Depositar
             </button>
-            {/* Sin backend todavía: no hay endpoint de transferencia ni alias/CVU
-                en el modelo de usuario — mismo criterio que Comprar/Vender, botón
-                real que no promete algo que no existe. */}
-            <button type="button" className={styles.sellButton} onClick={() => showToast("Transferencia iniciada — necesitás el alias o CVU del destinatario.")}>
+            <button type="button" className={styles.sellButton} onClick={() => setIsTransferOpen(true)}>
               <span className="msym" style={{ fontSize: 18 }} aria-hidden="true">send</span>
               Transferir
             </button>
@@ -330,8 +417,10 @@ export function Dashboard() {
             <p className={styles.txEmptyState}>Todavía no hiciste ninguna operación.</p>
           )}
           {!isLoading && !error && transactions && transactions.length > 0 && (
-            <ul className={styles.txList}>
-              {transactions.map((tx) => <TransactionRow key={tx.id} transaction={tx} />)}
+            <ul className={styles.txList} role="list">
+              {transactions.map((tx) => (
+                <TransactionRow key={tx.id} transaction={tx} onSelect={openDetail} />
+              ))}
             </ul>
           )}
         </div>
@@ -349,6 +438,14 @@ export function Dashboard() {
         token={token as string}
         balances={balances}
         onSuccess={handleConversionSuccess}
+      />
+
+      <TransferModal
+        isOpen={isTransferOpen}
+        onClose={() => setIsTransferOpen(false)}
+        token={token as string}
+        balances={balances}
+        onSuccess={handleTransferSuccess}
       />
 
       <Modal isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} ariaLabel="Depositar fondos">
@@ -391,6 +488,12 @@ export function Dashboard() {
           </Button>
         </form>
       </Modal>
+
+      <TransactionDetailModal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        transaction={selectedTransaction}
+      />
     </div>
   );
 }

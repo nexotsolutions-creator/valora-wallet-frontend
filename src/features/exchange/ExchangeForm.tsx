@@ -8,10 +8,11 @@ import { getApiErrorMessage } from "../../shared/services/apiClient";
 import { getBalances } from "../../shared/services/balanceService";
 import { exchange } from "../../shared/services/transactionService";
 import type { Balance, CurrencyCode } from "../../shared/types/models";
+import { CURRENCY_OPTIONS, RATE_NOT_AVAILABLE_NOTE } from "../../shared/constants";
+import { balanceFor } from "../../shared/utils/balances";
+import { INVALID_AMOUNT_MESSAGE, parsePositiveAmount } from "../../shared/utils/amount";
 import type { DashboardOutletContext } from "../../layouts/DashboardLayout/DashboardLayout";
 import styles from "./ExchangeForm.module.css";
-
-const CURRENCY_OPTIONS: CurrencyCode[] = ["USD", "EUR", "ARS"];
 
 export function ExchangeForm() {
   const { token } = useAuth();
@@ -37,10 +38,6 @@ export function ExchangeForm() {
     });
   }, [token]);
 
-  function balanceFor(code: CurrencyCode): number {
-    return balances?.find((bal) => bal.currencyCode === code)?.amount ?? 0;
-  }
-
   function swapCurrencies() {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
@@ -55,9 +52,9 @@ export function ExchangeForm() {
       setError("Elegí dos monedas distintas para intercambiar.");
       return;
     }
-    const parsedAmount = Number(amount);
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setError("Ingresá un monto válido, mayor a cero.");
+    const parsedAmount = parsePositiveAmount(amount);
+    if (parsedAmount === null) {
+      setError(INVALID_AMOUNT_MESSAGE);
       return;
     }
 
@@ -104,7 +101,7 @@ export function ExchangeForm() {
                 ))}
               </select>
               <span className={styles.balanceHint}>
-                Disponible: {balanceFor(fromCurrency).toLocaleString("es-AR", { maximumFractionDigits: 2 })} {fromCurrency}
+                Disponible: {balanceFor(balances, fromCurrency).toLocaleString("es-AR", { maximumFractionDigits: 2 })} {fromCurrency}
               </span>
             </div>
 
@@ -128,7 +125,7 @@ export function ExchangeForm() {
                   la altura con la columna de al lado (que sí tiene "Disponible"
                   debajo), también es información real y útil. */}
               <span className={styles.balanceHint}>
-                Disponible: {balanceFor(toCurrency).toLocaleString("es-AR", { maximumFractionDigits: 2 })} {toCurrency}
+                Disponible: {balanceFor(balances, toCurrency).toLocaleString("es-AR", { maximumFractionDigits: 2 })} {toCurrency}
               </span>
             </div>
           </div>
@@ -145,9 +142,7 @@ export function ExchangeForm() {
             required
           />
 
-          {/* No hay endpoint de cotización previa (ver Dashboard.tsx) — la tasa
-              real se calcula recién al confirmar, del lado del backend. */}
-          <p className={styles.rateNote}>La tasa se calcula al confirmar, no hay cotización previa disponible todavía.</p>
+          <p className={styles.rateNote}>{RATE_NOT_AVAILABLE_NOTE}</p>
 
           {error && <p className={styles.error} role="alert">{error}</p>}
           {success && <p className={styles.success} role="status">{success}</p>}

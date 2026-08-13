@@ -4,17 +4,18 @@ import styles from "./TransactionHistory.module.css";
 
 interface TransactionHistoryProps {
   transactions: Transaction[];
+  onSelectTransaction: (transaction: Transaction) => void;
 }
 
-export function TransactionHistory({ transactions }: TransactionHistoryProps) {
+export function TransactionHistory({ transactions, onSelectTransaction }: TransactionHistoryProps) {
   if (transactions.length === 0) {
     return <p className={styles.emptyState}>No hay operaciones para mostrar.</p>;
   }
 
   return (
-    <ul className={styles.list}>
+    <ul className={styles.list} role="list">
       {transactions.map((transaction) => (
-        <TransactionRow key={transaction.id} transaction={transaction} />
+        <TransactionRow key={transaction.id} transaction={transaction} onSelect={onSelectTransaction} />
       ))}
     </ul>
   );

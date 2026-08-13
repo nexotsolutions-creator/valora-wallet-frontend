@@ -29,6 +29,15 @@
   color: var(--text-secondary);
 }
 
+/* Mismo criterio que .dateInput en Registro.module.css (segundo consumidor
+   real, mismo motivo): no hay toggle real de tema todavía (nada setea
+   data-theme en tiempo de ejecución), así que un override condicional a
+   data-theme="light" acá sería CSS muerto. Revisar junto con el toggle real
+   cuando exista, no antes. */
+.dateInput {
+  color-scheme: dark;
+}
+
 .select {
   composes: select from "../../styles/formControl.module.css";
 }

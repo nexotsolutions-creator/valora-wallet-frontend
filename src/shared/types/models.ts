@@ -27,6 +27,11 @@ export interface User {
   // true solo si phone y du están cargados — gatilla el modal de "completar
   // perfil" en DashboardLayout cuando es false (ver CompleteProfileModal).
   profileComplete: boolean;
+  // Controla únicamente los emails transaccionales (depósito/compra/venta/
+  // intercambio/transferencia) — verificado contra userModel.ts y
+  // authController.ts del backend. No afecta el email de recuperación de
+  // contraseña, y no es un toggle de notificaciones push/genérico.
+  emailNotificationsEnabled: boolean;
 }
 
 export interface Wallet {
@@ -56,4 +61,23 @@ export interface Transaction {
   exchangeRate: number | null;
   resultingBalance: number;
   createdAt: string;
+  // Solo poblado en TRANSFER_IN/TRANSFER_OUT (ver mapTransactionToCamelCase en
+  // transactionController.ts del backend) — quién es la otra parte de la
+  // transferencia. null en cualquier otro tipo de movimiento.
+  counterpartyId: string | null;
+  counterpartyName: string | null;
+  counterpartyLastName: string | null;
+  counterpartyEmail: string | null;
+  // UUID de la wallet de la contraparte — no es presentable en UI (para eso
+  // está counterpartyAlias). Se mantiene por si algún flujo futuro necesita
+  // el ID real (ej. "responder" una transferencia).
+  counterpartyWallet: string | null;
+  // Alias legible de la contraparte (ver PR de "counterparty_alias" en el
+  // backend) — puede seguir siendo null en transacciones viejas insertadas
+  // antes de esa columna, o hasta que el backend lo despliegue.
+  counterpartyAlias: string | null;
+  // Nota opcional que se puede adjuntar a una transferencia (máx 140
+  // caracteres del lado del backend) — null si no se cargó ninguna, o en
+  // cualquier tipo de movimiento que no sea una transferencia.
+  concepto: string | null;
 }

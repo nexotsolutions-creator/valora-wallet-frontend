@@ -10,9 +10,10 @@ interface SidebarProps {
   onLogout: () => void;
   onOpenLegal: (variant: LegalVariant) => void;
   onToggleChatbot: () => void;
+  onOpenHelp: () => void;
 }
 
-export function Sidebar({ items, onLogout, onOpenLegal, onToggleChatbot }: SidebarProps) {
+export function Sidebar({ items, onLogout, onOpenLegal, onToggleChatbot, onOpenHelp }: SidebarProps) {
   const handleNavItemClick = useScrollToTopOnActiveClick();
 
   return (
@@ -54,6 +55,9 @@ export function Sidebar({ items, onLogout, onOpenLegal, onToggleChatbot }: Sideb
       </button>
 
       <div className={styles.footer}>
+        <button type="button" className={styles.footerLink} onClick={onOpenHelp}>
+          Ayuda
+        </button>
         <a href={`mailto:${SUPPORT_EMAIL}`} className={styles.footerLink}>
           Contacta a Soporte
         </a>
