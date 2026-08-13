@@ -17,7 +17,7 @@ import { deposit, getQuote, getTransactions, type TransferDestination } from "..
 import type { Balance, CurrencyCode, Transaction } from "../../shared/types/models";
 import { CURRENCY_OPTIONS } from "../../shared/constants";
 import { balanceFor } from "../../shared/utils/balances";
-import { INVALID_AMOUNT_MESSAGE, parsePositiveAmount } from "../../shared/utils/amount";
+import { formatCompactAmount, INVALID_AMOUNT_MESSAGE, parsePositiveAmount } from "../../shared/utils/amount";
 import { useRequestGuard } from "../../shared/hooks/useRequestGuard";
 import type { DashboardOutletContext } from "../../layouts/DashboardLayout/DashboardLayout";
 import styles from "./Dashboard.module.css";
@@ -274,8 +274,12 @@ export function Dashboard() {
     : totalError
       ? "No disponible"
       : totalConverted && totalConverted.currency === totalCurrency
-        ? `${totalCurrency} ${totalConverted.amount.toLocaleString("es-AR", { maximumFractionDigits: 2 })}`
+        ? `${totalCurrency} ${formatCompactAmount(totalConverted.amount)}`
         : "Calculando…";
+  const totalFullValue =
+    totalConverted && totalConverted.currency === totalCurrency
+      ? `${totalCurrency} ${totalConverted.amount.toLocaleString("es-AR", { maximumFractionDigits: 2 })}`
+      : undefined;
 
   return (
     <div className={styles.page}>
@@ -286,7 +290,7 @@ export function Dashboard() {
             <div>
               <div className={styles.label}>Balance total</div>
               <div className={styles.totalRow}>
-                <span className={styles.totalValue}>{totalDisplayValue}</span>
+                <span className={styles.totalValue} title={totalFullValue}>{totalDisplayValue}</span>
                 {totalError && !totalHidden && (
                   <button
                     type="button"
@@ -365,8 +369,11 @@ export function Dashboard() {
                       </span>
                     </button>
                   </div>
-                  <span className={styles.currencyCardValue}>
-                    {isHidden ? "••••••" : `${code} ${balanceFor(balances, code).toLocaleString("es-AR", { maximumFractionDigits: 2 })}`}
+                  <span
+                    className={styles.currencyCardValue}
+                    title={isHidden ? undefined : `${code} ${balanceFor(balances, code).toLocaleString("es-AR", { maximumFractionDigits: 2 })}`}
+                  >
+                    {isHidden ? "••••••" : `${code} ${formatCompactAmount(balanceFor(balances, code))}`}
                   </span>
                 </div>
               );
