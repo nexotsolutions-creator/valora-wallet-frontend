@@ -22,6 +22,7 @@ interface GoogleAccountsId {
     callback: (response: GoogleCredentialResponse) => void;
   }) => void;
   renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
+  disableAutoSelect: () => void;
 }
 
 declare global {
@@ -147,6 +148,18 @@ export function GoogleButton({ onSuccess, onError }: GoogleButtonProps) {
             }
           },
         });
+        // Emergencia 14/08: sin esto, renderButton() puede mostrar la tarjeta
+        // personalizada de Google ("Continuar como <Nombre>", con foto y
+        // mail) en cualquier navegador que ya haya iniciado sesión con Google
+        // en este sitio antes — incluso después de un logout de nuestra app,
+        // porque nuestro logout nunca le avisaba a Google que dejáramos de
+        // confiar en esa sesión (AuthProvider.tsx ya lo hace ahora, ver
+        // logout()). disableAutoSelect() acá cubre además el caso de una
+        // máquina que ya quedó en ese estado ANTES de este fix — se limpia
+        // sola apenas se carga /login o /registro, sin depender de que
+        // alguien haga logout primero. Documentado por Google como el método
+        // a llamar para este caso exacto.
+        window.google.accounts.id.disableAutoSelect();
       }
       // Botón nativo de Google, visible de verdad — reemplaza al botón
       // propio que hacía .click() por código sobre un botón real oculto: ese
