@@ -1,0 +1,19 @@
+/* Shell compartido para <select> de formulario (ExchangeForm, modal de depósito
+   de Dashboard). Cada .module.css local lo suma vía `composes`, mismo patrón
+   que popover.module.css, así no se duplica la regla byte a byte en cada lugar. */
+.select {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: 0.95rem;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--accent);
+}

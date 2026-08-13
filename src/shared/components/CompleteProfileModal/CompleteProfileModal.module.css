@@ -1,0 +1,99 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: min(400px, 85vw);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: calc(var(--spacing-xs) * -1) 0 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Mismo criterio que .dateInput en Registro.module.css (segundo consumidor
+   real, mismo motivo): no hay toggle real de tema todavía (nada setea
+   data-theme en tiempo de ejecución), así que un override condicional a
+   data-theme="light" acá sería CSS muerto. Revisar junto con el toggle real
+   cuando exista, no antes. */
+.dateInput {
+  color-scheme: dark;
+}
+
+.select {
+  composes: select from "../../styles/formControl.module.css";
+}
+
+/* Alineado a mano con Input size="lg" (Input.module.css .inputLg) — los dos
+   selects de este form van al lado de Input size="lg" en la misma fila/form,
+   el shell compartido de formControl.module.css por sí solo coincide con
+   Input size="sm" (sus otros 3 consumidores), no con "lg". height:56px es el
+   mismo literal que usa .inputLg, no hay token de altura en variables.css.
+   Selector duplicado (.select.select) a propósito: sube la especificidad a
+   0-2-0 para ganarle sí o sí a la regla compartida de formControl.module.css
+   (0-1-0) sin importar el orden de aparición en el CSS final — confirmado
+   contra dist/assets/*.css real que el orden de las reglas compuestas vía
+   `composes` no es determinista (en el build de producción la regla
+   compartida terminó *después* de esta, ganándole en el cascade a pesar de
+   que en el código fuente esta va después del `composes:`). No alcanza con
+   el orden del archivo para garantizar el override.
+   appearance:none saca la flecha nativa del navegador (reemplazada por
+   .selectIcon, Material Symbol propio, mismo sistema que Input usa para
+   icon="badge") — sin esto no se puede tener la flecha nativa Y
+   border-radius/padding custom funcionando bien a la vez en todos los
+   navegadores. padding-right 44px es el mismo literal que
+   Input.module.css .inputWithIcon, mismo motivo: dejar lugar al ícono. */
+.select.select {
+  height: 56px;
+  padding: 0 44px 0 var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-elevated);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.selectWrap {
+  position: relative;
+}
+
+/* Mismos valores que .inputIcon en Input.module.css — mismo aire visual que
+   el ícono "badge" de Documento. */
+.selectIcon {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--font-size-xs);
+}
+
+.submitButton {
+  width: 100%;
+}

@@ -11,80 +11,11 @@
   }
 }
 
-/* Blobs decorativos compartidos entre el panel de marca y el glow mobile */
-
-.blob {
-  position: absolute;
-  border-radius: var(--radius-pill);
-  filter: blur(100px);
-}
-
-.blobGold {
-  background: var(--accent);
-}
-
-.blobSuccess {
-  background: var(--success);
-}
-
-.brandGlow,
-.mobileGlow {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  opacity: 0.25;
-  pointer-events: none;
-}
-
-.brandGlow .blob:nth-child(1) {
-  top: -15%;
-  right: -10%;
-  width: 420px;
-  height: 420px;
-}
-
-.brandGlow .blob:nth-child(2) {
-  bottom: -20%;
-  left: -10%;
-  width: 360px;
-  height: 360px;
-}
-
-.mobileGlow {
-  display: none;
-  opacity: 0.28;
-}
-
-.mobileGlow .blob:nth-child(1) {
-  top: -8%;
-  right: -20%;
-  width: 380px;
-  height: 380px;
-}
-
-.mobileGlow .blob:nth-child(2) {
-  top: 40%;
-  left: -25%;
-  width: 340px;
-  height: 340px;
-}
-
-.mobileGlow .blob:nth-child(3) {
-  bottom: -10%;
-  right: -15%;
-  width: 340px;
-  height: 340px;
-}
-
-@media (max-width: 639px) {
-  .mobileGlow {
-    display: block;
-  }
-}
-
 /* Panel de marca — se queda fijo (sticky) en desktop mientras el formulario, más
    largo que en Login, scrollea por abajo. En Login no hace falta: el form entra
-   entero en el viewport y el panel no necesita despegarse del flujo normal. */
+   entero en el viewport y el panel no necesita despegarse del flujo normal.
+   Por eso .page acá NO tiene overflow:hidden (a diferencia de Login.module.css):
+   overflow:hidden en un ancestro rompe position:sticky. */
 
 .brandPanel {
   position: relative;
@@ -119,68 +50,6 @@
   .brandPanel {
     display: none;
   }
-}
-
-.brandHeader {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.brandLogo {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-@media (min-width: 1024px) {
-  .brandLogo {
-    width: 76px;
-    height: 76px;
-  }
-}
-
-.brandWordmark {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-tight);
-  color: var(--text-primary);
-}
-
-@media (min-width: 1024px) {
-  .brandWordmark {
-    font-size: var(--font-size-2xl);
-  }
-}
-
-.wordmarkMuted {
-  color: var(--text-tertiary);
-}
-
-.brandCopy {
-  position: relative;
-  z-index: 1;
-  max-width: 440px;
-}
-
-.brandHeadline {
-  font-size: clamp(28px, 3vw, var(--font-size-4xl));
-  font-weight: var(--font-weight-bold);
-  line-height: 1.15;
-  letter-spacing: var(--tracking-tight);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-}
-
-.brandSubtext {
-  font-size: var(--font-size-lg);
-  line-height: 28px;
-  color: var(--text-secondary);
-  margin: 0 0 var(--spacing-xl) 0;
 }
 
 .brandChecklist {
@@ -238,55 +107,6 @@
   margin: auto 0;
 }
 
-.mobileHeader {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xl);
-}
-
-@media (max-width: 639px) {
-  .mobileHeader {
-    display: flex;
-  }
-}
-
-.mobileLogo {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
-}
-
-.mobileWordmark {
-  margin: 0;
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-tight);
-  text-align: center;
-  color: var(--text-primary);
-}
-
-.formIntro {
-  text-align: center;
-  margin-bottom: var(--spacing-xl);
-}
-
-.formTitle {
-  font-size: clamp(24px, 4vw, var(--font-size-3xl));
-  font-weight: var(--font-weight-extrabold);
-  letter-spacing: var(--tracking-snug);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
-}
-
-.formSubtitle {
-  font-size: var(--font-size-lg);
-  color: var(--text-secondary);
-  margin: 0;
-}
-
 .form {
   display: flex;
   flex-direction: column;
@@ -298,58 +118,57 @@
   gap: var(--spacing-md);
 }
 
-.nameRow > .field {
+.nameRow > * {
   flex: 1;
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  composes: field from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
-.fieldLabel {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+/* Selector de país de residencia — no se movió a PhoneNumberField
+   (shared/components), que solo cubre el selector de prefijo de celular.
+   .phoneRow/.phoneField/.phoneInputField ya no existen en este archivo (se
+   movieron ahí junto con ese selector) — lo que sigue abajo (.selectLabel/
+   .selectWrap/.select/.select.select/.selectIcon) es del select de
+   residencia, que lo sigue usando, sin relación con esas otras clases.
+   Duplicado con el bloque equivalente de CompleteProfileModal.module.css
+   (ya lo estaba desde antes de esta tarea, ver b6d89a0) — sigue pendiente,
+   ver la nota del hallazgo #2 (Gemini) en PhoneNumberField.module.css. */
+.selectLabel {
+  composes: labelLg from "../../shared/components/Input/Input.module.css";
 }
 
-.inputWrap {
+.selectWrap {
   position: relative;
 }
 
-.input {
-  width: 100%;
+.select {
+  composes: select from "../../shared/styles/formControl.module.css";
+}
+
+.select.select {
   height: 56px;
-  box-sizing: border-box;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 0 var(--spacing-lg);
-  color: var(--text-primary);
-  font-family: var(--font-family-base);
+  padding: 0 44px 0 var(--spacing-lg);
   font-size: var(--font-size-lg);
-  outline: none;
-  transition: border-color 0.15s ease;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-elevated);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
-.input:focus {
-  border-color: var(--accent);
+.selectIcon {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  opacity: 0.7;
+  pointer-events: none;
 }
 
-.input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.inputWithIcon {
-  padding-right: 44px;
-}
-
-.inputError {
-  border-color: var(--danger);
-}
-
-.input[type="date"] {
+.dateInput {
   /* Igual que color-scheme:dark en body (index.css): no hay toggle real
      todavía (nada setea data-theme en tiempo de ejecución), así que un
      override condicional a data-theme="light" acá sería CSS muerto — mismo
@@ -358,68 +177,8 @@
   color-scheme: dark;
 }
 
-.inputIcon {
-  position: absolute;
-  right: var(--spacing-md);
-  top: 17px;
-  color: var(--text-secondary);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.inputIconButton {
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  display: flex;
-  background: none;
-  border: none;
-  padding: 4px;
-  color: var(--text-secondary);
-  opacity: 0.7;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-.inputIconButton:hover {
-  opacity: 1;
-}
-
 .fieldHint {
-  margin: 0;
-  margin-left: 4px;
-  font-size: var(--font-size-xs);
-  color: var(--danger);
-}
-
-.strengthMeter {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  margin-left: 4px;
-}
-
-.strengthBar {
-  flex: 1;
-  height: 3px;
-  border-radius: var(--radius-pill);
-  background: var(--border);
-}
-
-.strengthLevel1 {
-  background: var(--danger);
-}
-
-.strengthLevel2 {
-  background: var(--strength-fair);
-}
-
-.strengthLevel3 {
-  background: var(--strength-good);
-}
-
-.strengthLevel4 {
-  background: var(--success);
+  composes: fieldHint from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
 .checkboxRow {
@@ -446,91 +205,33 @@
 }
 
 .inlineLink {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: inherit;
-  font-weight: var(--font-weight-semibold);
-  color: var(--accent);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.inlineLink:hover {
-  color: var(--accent-hover);
-}
-
-.inlineLink[aria-disabled="true"] {
-  cursor: not-allowed;
-}
-
-.inlineLink[aria-disabled="true"]:hover {
-  color: var(--accent);
-}
-
-/* Button compartido: variant="secondary" solo cambia border-color en hover, así que
-   alcanza con revertir esa propiedad puntual para los usos marcados aria-disabled */
-.actionButton[aria-disabled="true"] {
-  cursor: not-allowed;
-}
-
-.actionButton[aria-disabled="true"]:hover {
-  border-color: var(--border);
-}
-
-.error {
-  margin: 0;
-  color: var(--danger);
-  font-size: var(--font-size-xs);
+  composes: inlineLink from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
 .actionButton {
-  width: 100%;
-  height: 56px;
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-lg);
+  composes: actionButton from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
-.googleButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+.error {
+  composes: error from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
 .divider {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
+  composes: divider from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
 .dividerLine {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
+  composes: dividerLine from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
 .dividerText {
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  font-weight: var(--font-weight-medium);
+  composes: dividerText from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
 .signupHint {
-  margin-top: var(--spacing-xl);
-  text-align: center;
-  font-size: var(--font-size-md);
-  color: var(--text-secondary);
+  composes: signupHint from "../../shared/components/AuthShared/AuthShared.module.css";
 }
 
 .footerNote {
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-  margin-top: var(--spacing-xl);
-  font-size: var(--font-size-2xs);
-  color: var(--text-secondary);
-  opacity: 0.4;
-  font-weight: var(--font-weight-medium);
-  letter-spacing: var(--tracking-wide);
+  composes: footerNote from "../../shared/components/AuthShared/AuthShared.module.css";
 }

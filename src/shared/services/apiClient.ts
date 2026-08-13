@@ -20,8 +20,38 @@ export class ApiError extends Error {
   }
 }
 
+// Cualquier error que no sea un ApiError (falló el fetch en sí, no la respuesta
+// del servidor) no trae un mensaje pensado para mostrarle al usuario.
+export function getApiErrorMessage(err: unknown): string {
+  return err instanceof ApiError ? err.message : "No se pudo conectar con el servidor. Intentá de nuevo.";
+}
+
+// apiClient.ts es un módulo plano, no un componente — no tiene acceso directo a
+// useAuth()/useNavigate() para forzar un logout limpio cuando el JWT vence (15
+// minutos, sin refresh token del lado del backend). AuthProvider registra acá
+// su handler (y lo vuelve a registrar en cada render suyo, para cerrar siempre
+// sobre el logout()/navigate más reciente); cualquier 401 de un request
+// autenticado dispara esto en vez de dejar el error crudo del backend ("Token
+// inválido o expirado.") mostrado donde sea que esa pantalla puntual muestre errores.
+type UnauthorizedHandler = () => void;
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+  unauthorizedHandler = handler;
+}
+
 interface ApiFetchOptions extends RequestInit {
   token?: string;
+}
+
+// data es unknown — sin esto, un backend/proxy que manda error como objeto
+// (ej. { code, message }) pasaba el truthiness check igual (un objeto es
+// truthy) y terminaba interpolado como string en algún punto ("[object
+// Object]" en vez del mensaje genérico, que es peor que el fallback).
+function asNonEmptyString(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
 }
 
 async function parseJsonSafely(response: Response): Promise<unknown> {
@@ -73,7 +103,24 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   const data = await parseJsonSafely(response);
 
   if (!response.ok) {
-    const message = (data as { error?: string } | undefined)?.error ?? "Ocurrió un error inesperado. Intentá de nuevo.";
+    // El backend manda el texto pensado para mostrarle al usuario en `message`
+    // (ej. "Tasa de cambio no disponible..."), no en `error` — ese campo es el
+    // código de error interno (ej. "RATE_NOT_AVAILABLE"), no texto para UI. Pero
+    // algún endpoint (o un proxy intermedio) puede seguir mandando el texto útil
+    // en `error` en vez de `message` — asNonEmptyString descarta undefined,
+    // string vacío y valores no-string (ej. un { code, message } anidado) por
+    // igual, así que cae a `error` y después al genérico en cualquiera de esos casos.
+    const errorBody = data as { message?: unknown; error?: unknown } | undefined;
+    const message =
+      asNonEmptyString(errorBody?.message) ??
+      asNonEmptyString(errorBody?.error) ??
+      "Ocurrió un error inesperado. Intentá de nuevo.";
+    // Solo si el request llevaba token: /auth/login, /auth/register, /auth/google
+    // y demás endpoints públicos también pueden devolver 401 (ej. credenciales
+    // inválidas, idToken de Google inválido) sin que haya ninguna sesión que cerrar.
+    if (response.status === 401 && token) {
+      unauthorizedHandler?.();
+    }
     throw new ApiError(message, response.status);
   }
 

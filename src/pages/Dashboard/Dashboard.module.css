@@ -7,6 +7,10 @@
   gap: var(--spacing-lg);
 }
 
+.srOnly {
+  composes: srOnly from "../../shared/styles/visuallyHidden.module.css";
+}
+
 @media (max-width: 859px) {
   .page {
     grid-template-columns: 1fr;
@@ -227,9 +231,15 @@
 
 .buySellRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md);
   margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+  .buySellRow {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .buyButton,
@@ -388,100 +398,55 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  /* <ul> real (no <div>) por semántica de lista para lectores de pantalla —
+     TransactionRow es <li> ahora, compartido con TransactionHistory.tsx. */
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.txRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-sm);
-  margin: 0 calc(var(--spacing-sm) * -1);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+.txEmptyState {
+  margin: 0;
+  padding: var(--spacing-sm) 0;
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
 }
 
-.txRow:hover {
-  background: var(--bg-inset);
-}
+/* Modal de depósito */
 
-.txRowLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  min-width: 0;
-}
-
-.txIconWrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.txIcon {
-  font-size: var(--font-size-xl);
-}
-
-.txTextGroup {
+.depositForm {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-md);
+  width: min(360px, 80vw);
 }
 
-.txTitle {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
+.depositTitle {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
 }
 
-.txDate {
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-wide);
+.depositSubtitle {
+  margin: calc(var(--spacing-xs) * -1) 0 0 0;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
-.txRight {
-  text-align: right;
+.depositField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
 }
 
-.txAmount {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+.depositSelect {
+  composes: select from "../../shared/styles/formControl.module.css";
 }
 
-.txCurrency {
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-wide);
-  color: var(--text-secondary);
-}
-
-.tonePos {
-  color: var(--success);
-}
-
-.toneNeg {
+.depositError {
+  margin: 0;
   color: var(--danger);
-}
-
-.toneGold {
-  color: var(--accent);
-}
-
-.txIconWrap.tonePos {
-  background: color-mix(in srgb, var(--success) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--success) 20%, transparent);
-}
-
-.txIconWrap.toneNeg {
-  background: color-mix(in srgb, var(--danger) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--danger) 20%, transparent);
-}
-
-.txIconWrap.toneGold {
-  background: rgba(240, 180, 41, 0.12);
-  border: 1px solid rgba(240, 180, 41, 0.2);
+  font-size: var(--font-size-xs);
 }
 

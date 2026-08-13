@@ -32,6 +32,31 @@
   animation-timing-function: ease-out;
 }
 
+@media (max-width: 859px) {
+  .overlay {
+    /* align-items/justify-content:center ya centran contra el viewport
+       completo, pero en mobile hay un header sticky arriba y un bottom nav
+       fijo abajo (ver DashboardLayout.module.css) que se ven de fondo a
+       través del overlay — sin este padding, un modal con contenido alto
+       (ConversionModal, LegalModal) termina centrado matemáticamente contra
+       los 100vh pero visualmente pegado contra uno de los dos en vez de
+       sentirse centrado en el área útil. --content-bottom-offset ya existe
+       para este mismo propósito (ver Toast); acá se reusa y se suma un
+       padding-top fijo de espacio para el header. En páginas sin ese layout
+       (Login/Registro, sin bottom nav) la variable no está definida y cae al
+       fallback de spacing-lg de siempre.
+    */
+    padding: 80px var(--spacing-md) var(--content-bottom-offset, var(--spacing-lg));
+    box-sizing: border-box;
+  }
+
+  .content {
+    max-height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+}
+
 .contentClosing {
   animation-name: contentOut;
   animation-timing-function: ease-in;

@@ -1,36 +1,153 @@
 .page {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: var(--spacing-xl);
-  padding-bottom: var(--content-bottom-offset, var(--spacing-xl));
+  padding: var(--spacing-lg);
+  padding-bottom: var(--content-bottom-offset, var(--spacing-lg));
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--spacing-lg);
 }
 
+@media (min-width: 700px) {
+  .page {
+    padding: var(--spacing-xl);
+    padding-bottom: var(--content-bottom-offset, var(--spacing-xl));
+  }
+}
+
+/* Tarjeta base de las tres secciones principales (Información personal /
+   Información de cuenta / Acciones) — no reusa el <Card> compartido: Card ya
+   fija su propio border-radius (--radius-lg, 12px) en su .module.css, y
+   pisarlo desde acá competiría por especificidad con el orden de import de
+   los dos módulos (frágil). Mismo bg/border que Card, radio propio (--radius-xl,
+   16px, del mockup) en vez de heredarlo. */
 .card {
-  width: 100%;
-  max-width: 480px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+/* --- Header --- */
+
+.header {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 560px) {
+  .header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
 .avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background-color: var(--bg-inset);
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-base);
   border: 2px solid var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 auto;
+  font-weight: var(--font-weight-bold);
+  color: var(--accent);
+  flex-shrink: 0;
 }
+
+.name {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: var(--tracking-snug);
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.email {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.editProfileButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: inherit;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.editProfileButton:hover {
+  background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* --- Grid de 3 columnas --- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+@media (min-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.accountColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* --- Información personal --- */
 
 .field {
   display: flex;
@@ -58,10 +175,62 @@
   gap: var(--spacing-sm);
 }
 
+/* --- Información de cuenta (Alias/CVU/Estado) --- */
+
+.accountRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.accountLabel {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+}
+
+.accountValueGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.accountValue {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: color-mix(in srgb, var(--success) 15%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 3px var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--success);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background-color: var(--success);
+  flex-shrink: 0;
+}
+
+/* --- Edición inline (Alias, mismo patrón reusado por EditPhoneModal y
+   DeleteAccountModal vía composes) --- */
+
 .editForm {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  width: 100%;
 }
 
 .editActions {
@@ -104,4 +273,171 @@
   margin: 0;
   color: var(--danger);
   font-size: var(--font-size-xs);
+}
+
+/* --- Preferencias --- */
+
+.preferencesBox {
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.preferencesTitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.toggleLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.toggleDescription {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Knob en --text-primary, no un blanco hardcodeado: es el tono más claro
+   disponible en la paleta, y no hay ningún token de "blanco puro" en
+   variables.css (confirmado, sin precedente en ningún otro .module.css del
+   proyecto). */
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  background-color: var(--border);
+  transition: background-color 0.15s ease;
+}
+
+.toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle[data-on="true"] {
+  background-color: var(--accent);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background-color: var(--text-primary);
+  transition: left 0.15s ease;
+}
+
+.toggle[data-on="true"] .toggleKnob {
+  left: 21px;
+}
+
+/* --- "Más preferencias próximamente" --- */
+
+.comingSoonBox {
+  background-color: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.comingSoonIcon {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.comingSoonText {
+  flex: 1;
+}
+
+.comingSoonTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.comingSoonSubtitle {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.comingSoonBadge {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-tertiary);
+  background-color: var(--bg-panel);
+  border-radius: var(--radius-pill);
+  padding: 4px var(--spacing-sm);
+  white-space: nowrap;
+}
+
+/* --- Acciones --- */
+
+.actionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  background-color: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.actionButton:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deleteButton {
+  composes: actionButton;
+  background-color: color-mix(in srgb, var(--danger) 8%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+  color: var(--danger);
+}
+
+.deleteButton:hover {
+  border-color: var(--danger);
 }

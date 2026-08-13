@@ -1,0 +1,41 @@
+.fab {
+  display: none;
+}
+
+@media (max-width: 859px) {
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: var(--spacing-md);
+    /* Offset propio arriba del BottomNav — separado de --toast-bottom-offset
+       (definido junto a esta en DashboardLayout.module.css) para poder tunear
+       cada uno sin que el otro se mueva. Sin fallback a propósito: ChatbotFAB
+       solo se monta dentro de DashboardLayout (nunca en Login/Registro, a
+       diferencia de Toast), así que la variable siempre está definida acá
+       — mismo caso que --sidebar-width en Sidebar.module.css. */
+    bottom: var(--chatbot-fab-offset);
+    z-index: 150;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+  }
+
+  .fab:hover {
+    background: var(--accent-hover);
+  }
+
+  .fabHidden {
+    pointer-events: none;
+  }
+
+  .fabIcon {
+    font-size: 26px;
+  }
+}

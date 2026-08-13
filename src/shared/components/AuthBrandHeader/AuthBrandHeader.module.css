@@ -1,0 +1,39 @@
+.brandHeader {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.brandLogo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .brandLogo {
+    width: 76px;
+    height: 76px;
+  }
+}
+
+.brandWordmark {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+
+@media (min-width: 1024px) {
+  .brandWordmark {
+    font-size: var(--font-size-2xl);
+  }
+}
+
+.wordmarkMuted {
+  color: var(--text-tertiary);
+}

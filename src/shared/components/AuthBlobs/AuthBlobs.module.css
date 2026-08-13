@@ -1,0 +1,70 @@
+/* Blobs decorativos compartidos entre el panel de marca y el glow mobile */
+
+.blob {
+  position: absolute;
+  border-radius: var(--radius-pill);
+  filter: blur(100px);
+}
+
+.blobGold {
+  background: var(--accent);
+}
+
+.blobSuccess {
+  background: var(--success);
+}
+
+.brandGlow,
+.mobileGlow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.brandGlow .blob:nth-child(1) {
+  top: -15%;
+  right: -10%;
+  width: 420px;
+  height: 420px;
+}
+
+.brandGlow .blob:nth-child(2) {
+  bottom: -20%;
+  left: -10%;
+  width: 360px;
+  height: 360px;
+}
+
+.mobileGlow {
+  display: none;
+  opacity: 0.28;
+}
+
+.mobileGlow .blob:nth-child(1) {
+  top: -8%;
+  right: -20%;
+  width: 380px;
+  height: 380px;
+}
+
+.mobileGlow .blob:nth-child(2) {
+  top: 40%;
+  left: -25%;
+  width: 340px;
+  height: 340px;
+}
+
+.mobileGlow .blob:nth-child(3) {
+  bottom: -10%;
+  right: -15%;
+  width: 340px;
+  height: 340px;
+}
+
+@media (max-width: 639px) {
+  .mobileGlow {
+    display: block;
+  }
+}

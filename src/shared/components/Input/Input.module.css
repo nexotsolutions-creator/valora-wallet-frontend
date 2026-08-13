@@ -9,7 +9,22 @@
   color: var(--text-secondary);
 }
 
+/* El "Lg" es por la variante size="lg" del Input, no por el tamaño del label:
+   a propósito se queda en --font-size-md (más chico que --font-size-lg del
+   input) — así era .fieldLabel en el diseño original de Login/Registro. */
+.labelLg {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.inputWrap {
+  position: relative;
+}
+
 .input {
+  width: 100%;
+  box-sizing: border-box;
   background-color: var(--bg-base);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -26,4 +41,55 @@
 
 .input::placeholder {
   color: var(--text-secondary);
+}
+
+/* Variante alta usada por los formularios de auth (Login/Registro) */
+.inputLg {
+  height: 56px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: 0 var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  transition: border-color 0.15s ease;
+}
+
+.inputLg::placeholder {
+  color: var(--text-tertiary);
+}
+
+.inputWithIcon {
+  padding-right: 44px;
+}
+
+.inputError {
+  border-color: var(--danger);
+}
+
+.inputIcon {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.inputIconButton {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.inputIconButton:hover {
+  opacity: 1;
 }
