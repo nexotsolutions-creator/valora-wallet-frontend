@@ -1,6 +1,6 @@
 # Valora Wallet — Frontend
 
-Dashboard web de **Valora Wallet**, una billetera digital multi-moneda diseñada para freelancers y trabajadores remotos en LATAM. 
+Dashboard web de **Valora Wallet**, una billetera digital multi-moneda diseñada para freelancers y trabajadores remotos en LATAM.
 
 Desarrollado por **Nexo Tech Solutions** como Proyecto Final para la carrera Full Stack de **Henry**.
 
@@ -22,7 +22,7 @@ El proyecto está modularizado en dos repositorios independientes (Frontend y Ba
 - **Build tool:** Vite
 - **Estilos:** CSS Modules. Se optó por esta tecnología para mantener la consistencia mediante design tokens centralizados (`shared/styles/variables.css`) sin depender de frameworks externos, garantizando un código limpio y modular.
 - **Despliegue:** Vercel (CI/CD configurado para despliegues automáticos).
-- **Linter/Code Formatter:** ESLint y Prettier configurados para mantener un estándar de código legible y consistente.
+- **Linter:** oxlint, configurado para detectar errores de sintaxis y estilo. No usamos ESLint ni Prettier.
 
 ---
 
@@ -31,22 +31,28 @@ El proyecto está modularizado en dos repositorios independientes (Frontend y Ba
 Sigue estos pasos para correr el entorno de desarrollo localmente:
 
 1. **Clonar el repositorio:**
+
    ```bash
    git clone https://github.com/nexotsolutions-creator/valora-wallet-frontend.git
    cd valora-wallet-frontend
    ```
 
 2. **Instalar dependencias:**
+
    ```bash
    npm install
    ```
 
 3. **Configurar Variables de Entorno:**
    Crea un archivo `.env.local` en la raíz del proyecto basándote en el archivo de ejemplo:
+
    ```bash
    cp .env.example .env.local
    ```
+
    Asegúrate de configurar la variable `VITE_API_URL`. Si corres el backend en tu PC usa `http://localhost:3000`. Si quieres conectarte al backend de producción usa `https://valora-wallet-backend-production.up.railway.app`.
+
+   También necesitás `VITE_GOOGLE_CLIENT_ID` (Client ID de OAuth de Google) para que el botón "Continuar con Google" funcione — sin esta variable, el botón queda deshabilitado con un mensaje de "no disponible".
 
 4. **Levantar el servidor de desarrollo:**
    ```bash
@@ -54,10 +60,25 @@ Sigue estos pasos para correr el entorno de desarrollo localmente:
    ```
 
 ### Scripts Disponibles (Comandos del Día a Día)
+
 - `npm run dev`: Levanta el servidor local con hot-reload.
 - `npm run build`: Compila el proyecto para producción usando TypeScript (`tsc -b`).
 - `npm run preview`: Sirve el build de producción localmente para pruebas.
 - `npm run lint`: Ejecuta el linter (oxlint) para detectar errores de sintaxis y estilo.
+- `npm test`: Corre la suite de tests con Vitest.
+- `npm run test:watch`: Corre los tests en modo watch.
+
+---
+
+## 🧪 Testing
+
+Usamos **Vitest** para tests unitarios. La cobertura actual se concentra en lógica pura y en la capa de servicios, no en componentes `.tsx` (la config corre en `environment: "node"`, sin el plugin de React — ver `vitest.config.ts`):
+
+- `shared/utils/`: `amount.test.ts`, `balances.test.ts`, `date.test.ts`, `phone.test.ts` — funciones puras de formateo/validación.
+- `shared/auth/`: `authService.test.ts`, `authStorage.test.ts` — lógica de autenticación y persistencia de sesión.
+- `shared/services/`: `apiClient.test.ts` — cliente HTTP compartido.
+
+Correr `npm test` para la suite completa, o `npm run test:watch` en modo watch durante desarrollo.
 
 ---
 
@@ -67,15 +88,23 @@ Organizamos el código por dominio de negocio (características) y no por tipo d
 
 ```text
 src/
+  App.tsx             # Definición de rutas de la app
+  main.tsx            # Entry point (monta React, providers globales)
+  index.css           # Estilos globales, importa variables.css
   shared/
     components/       # Componentes UI puros y reutilizables (Button, Modal, Input)
-    styles/           # Design tokens (variables.css)
+    styles/           # Design tokens (variables.css) y shells de CSS compartidos
+                       # vía composes (formControl, popover, visuallyHidden)
     auth/             # Contexto y servicios de Autenticación centralizados
     hooks/            # Custom hooks de React (abstracción de lógica)
     services/         # Clientes de API y conexiones externas
     types/            # Definiciones de TypeScript e interfaces
+    utils/            # Funciones puras compartidas (fechas, montos, teléfonos,
+                       # balances, notificaciones, formateo de transacciones)
+    constants.ts      # Constantes transversales de la app
+    assets/           # Imágenes y assets estáticos
   layouts/            # Estructuras de página (ej. DashboardLayout con header y sidebar)
-  pages/              # Vistas principales (Login, Registro, Dashboard)
+  pages/              # Vistas principales (Login, Registro, RecuperarContrasena, ResetPassword, Dashboard, Usuario, Tarjetas)
   features/           # Módulos de negocio aislados (Abstracción de capas)
     transactions/     # Lógica de transacciones (depósitos/retiros)
     exchange/         # Lógica de conversión de monedas (compra/venta)
@@ -90,21 +119,24 @@ src/
 Trabajamos bajo un marco **Ágil** en Sprints semanales (Sprint 1: Fundamentos, Sprint 2: Funcionalidad core). Usamos tableros Kanban (Trello/Ora) y aplicamos la regla **INVEST** para dividir las historias de usuario en tareas pequeñas y manejables antes de tirar la primera línea de código.
 
 ### Flujo de Git (Feature Branches + PRs)
+
 Manejamos un ciclo de vida de ramas de 4 etapas: `personal` → `dev` → `pre-staging` → `main`.
+
 1. **Ramas Personales:** Cada integrante desarrolla sus tareas en su rama personal (ej. `analia`, `santiago`).
 2. **Ramas Protegidas:**
    - `dev` (Integración): Todo el código nuevo se pushea y mergea aquí para pruebas locales.
    - `pre-staging` (Pruebas de Calidad): Cuando `dev` es estable, se promueve a esta rama para revisión general.
    - `main` (Producción): Rama épica usada exclusivamente como backup estable y despliegue final en Vercel.
-3. **Pull Requests (PRs):** 
+3. **Pull Requests (PRs):**
    - Las tareas nuevas siempre se abren mediante un PR hacia la rama `dev`.
    - Deben ser atómicos ("Do one thing and do it well").
    - Si un PR está en progreso y sirve para conversar, se titula con `WIP: `.
-   - **Code Review Obligatorio:** Todo PR requiere al menos 1 aprobación cruzada. Fomenta la visión holística del proyecto y evita que "reinventemos la rueda". El autor del PR es responsable de mergearlo una vez aprobado.
+   - **Code Review Obligatorio:** Todo PR requiere aprobación cruzada — 2 aprobaciones para mergear a `main`, 1 para `dev`. Fomenta la visión holística del proyecto y evita que "reinventemos la rueda". El autor del PR es responsable de mergearlo una vez aprobado.
 
 ### Convenciones de Código (Clean Code)
+
 - **Idioma Híbrido:** Todo el código fuente (variables, funciones, componentes) se escribe estrictamente en **Inglés** por estándar de la industria. Sin embargo, los **comentarios y los mensajes de los commits se escriben en Español** para agilizar la comunicación interna del equipo.
-- **Nombramiento (El nombre justo):** 
+- **Nombramiento (El nombre justo):**
   - Variables/Funciones: `camelCase` (ej. `filteredTransactions`). Priorizamos nombres explícitos que eviten la necesidad de comentarios.
   - Componentes/Clases: `PascalCase` (ej. `DashboardLayout`).
   - Constantes ("No hardcodeo"): `UPPER_SNAKE_CASE` (ej. `MAX_AMOUNT`).
@@ -117,10 +149,13 @@ Manejamos un ciclo de vida de ramas de 4 etapas: `personal` → `dev` → `pre-s
 ## 🎨 Diseño y UI/UX
 
 - **Tema:** Dark theme fintech nativo (modo oscuro).
-- **Paleta de Colores (Design Tokens):** 
-  Todos los colores se consumen desde nuestras variables globales (`shared/styles/variables.css`):
-  - Base: `#262624` (Gris oscuro cálido)
-  - Acento (Marca Valora): `#f0b429` (Dorado - usado estratégicamente para CTAs y montos destacados, no como fondo masivo).
+- **Paleta de Colores (Design Tokens):**
+  Todos los colores se consumen desde nuestras variables globales (`shared/styles/variables.css`), nunca hardcodeados en un componente:
+  - Fondo base: `--bg-base` (`#121411`) — el resto de superficies escalona con `--bg-elevated`, `--bg-surface`, `--bg-inset`, `--bg-panel`.
+  - Acento (Marca Valora): `--accent` (`#f0b429`, dorado) — usado estratégicamente para CTAs y montos destacados, no como fondo masivo. `--accent-hover`/`--accent-contrast` para sus estados derivados.
+  - Semánticos: `--success`, `--danger`.
+  - Texto: `--text-primary`, `--text-secondary`, `--text-tertiary`.
+  - Bordes: `--border`, `--border-strong`.
 
 ---
 
