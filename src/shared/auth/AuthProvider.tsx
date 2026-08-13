@@ -95,6 +95,22 @@ export function AuthProvider({ children }: PropsWithChildren) {
         // Storage bloqueado o sin cuota — no bloquea el logout.
       }
     }
+    // Sin esto, Google sigue ofreciendo el botón personalizado ("Continuar
+    // como <Nombre>", con foto y mail) en este navegador indefinidamente,
+    // incluso después de este logout — nuestra sesión (JWT) se cierra bien,
+    // pero Google nunca se entera de que dejamos de confiar en esa cuenta
+    // para auto-select. Riesgo real en máquinas compartidas: la siguiente
+    // persona ve el nombre/mail de quien usó el botón antes y entra con un
+    // solo click, sin que se le pida contraseña. Try/catch propio (no el de
+    // arriba): son fallas independientes — que falle el storage no debería
+    // saltearse esto, ni al revés. Ver también disableAutoSelect() en
+    // GoogleButton.tsx, que cubre el caso de una máquina que ya haya quedado
+    // en este estado antes de este fix.
+    try {
+      window.google?.accounts?.id?.disableAutoSelect?.();
+    } catch {
+      // Script de Google no cargó o algo falló ahí — no bloquea el logout real.
+    }
     setAuth(null);
   }
 
